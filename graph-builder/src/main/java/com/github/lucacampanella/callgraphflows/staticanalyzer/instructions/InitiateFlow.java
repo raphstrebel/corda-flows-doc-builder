@@ -1,5 +1,7 @@
 package com.github.lucacampanella.callgraphflows.staticanalyzer.instructions;
 
+import java.util.Optional;
+
 import com.github.lucacampanella.callgraphflows.staticanalyzer.AnalyzerWithModel;
 import com.github.lucacampanella.callgraphflows.staticanalyzer.ClassDescriptionContainer;
 import com.github.lucacampanella.callgraphflows.staticanalyzer.StaticAnalyzerUtils;
@@ -13,8 +15,6 @@ import spoon.reflect.code.CtLocalVariable;
 import spoon.reflect.code.CtStatement;
 import spoon.reflect.declaration.CtClass;
 import spoon.reflect.visitor.filter.TypeFilter;
-
-import java.util.Optional;
 
 public class InitiateFlow extends InstructionStatement {
 
@@ -49,8 +49,8 @@ public class InitiateFlow extends InstructionStatement {
         try {
             initiateFlow.partyArgument = inv.getArguments().get(0).toString();
         } catch (NullPointerException e) {
-            LOGGER.warn("Couldn't find out the party name involved in the initiateFlow call {}, " +
-                    "continuing without this information, thy may affect analysis", statement);
+            //LOGGER.warn("Couldn't find out the party name involved in the initiateFlow call {}, " +
+            //        "continuing without this information, thy may affect analysis", statement);
             LOGGER.trace("Exception: ", e);
         }
 

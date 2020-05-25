@@ -1,13 +1,14 @@
 package com.github.lucacampanella.callgraphflows.staticanalyzer;
 
-import com.github.lucacampanella.callgraphflows.staticanalyzer.instructions.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
+
+import com.github.lucacampanella.callgraphflows.staticanalyzer.instructions.StatementInterface;
+import com.github.lucacampanella.callgraphflows.staticanalyzer.instructions.StatementWithCompanionInterface;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class CombinationsHolder {
 
@@ -295,7 +296,7 @@ public class CombinationsHolder {
             LOGGER.trace("{}", instrRight);
 
             if(!instrLeft.acceptCompanion(instrRight)) {
-                LOGGER.info("error in this flow logic!");
+                //LOGGER.info("error in this flow logic!");
                 return null;
             }
             else {

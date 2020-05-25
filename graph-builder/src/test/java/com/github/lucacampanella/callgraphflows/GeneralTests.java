@@ -1,12 +1,51 @@
 package com.github.lucacampanella.callgraphflows;
 
+import static com.github.lucacampanella.TestUtils.fromClassSrcToPath;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import com.github.lucacampanella.TestUtils;
-import com.github.lucacampanella.callgraphflows.staticanalyzer.*;
+import com.github.lucacampanella.callgraphflows.staticanalyzer.AnalysisErrorException;
+import com.github.lucacampanella.callgraphflows.staticanalyzer.AnalysisResult;
+import com.github.lucacampanella.callgraphflows.staticanalyzer.AnalyzerWithModel;
+import com.github.lucacampanella.callgraphflows.staticanalyzer.CombinationsHolder;
+import com.github.lucacampanella.callgraphflows.staticanalyzer.JarAnalyzer;
+import com.github.lucacampanella.callgraphflows.staticanalyzer.SourceClassAnalyzer;
+import com.github.lucacampanella.callgraphflows.staticanalyzer.StaticAnalyzerUtils;
+import com.github.lucacampanella.callgraphflows.staticanalyzer.StaticAnalyzerUtilsTest;
 import com.github.lucacampanella.callgraphflows.staticanalyzer.instructions.IfElse;
 import com.github.lucacampanella.callgraphflows.staticanalyzer.instructions.MethodInvocation;
 import com.github.lucacampanella.callgraphflows.staticanalyzer.instructions.StatementInterface;
 import com.github.lucacampanella.callgraphflows.staticanalyzer.instructions.While;
-import com.github.lucacampanella.callgraphflows.staticanalyzer.testclasses.*;
+import com.github.lucacampanella.callgraphflows.staticanalyzer.testclasses.BreakTestFlow;
+import com.github.lucacampanella.callgraphflows.staticanalyzer.testclasses.ContainerFlow;
+import com.github.lucacampanella.callgraphflows.staticanalyzer.testclasses.ContinueBreakTestFlow;
+import com.github.lucacampanella.callgraphflows.staticanalyzer.testclasses.ContinueTestFlow;
+import com.github.lucacampanella.callgraphflows.staticanalyzer.testclasses.DoWhileTestFlow;
+import com.github.lucacampanella.callgraphflows.staticanalyzer.testclasses.ForTestFlow;
+import com.github.lucacampanella.callgraphflows.staticanalyzer.testclasses.GraphForDocsFlow;
+import com.github.lucacampanella.callgraphflows.staticanalyzer.testclasses.InitiateFlowInIfTestFlow;
+import com.github.lucacampanella.callgraphflows.staticanalyzer.testclasses.InitiatingFlowInIfTestFlow;
+import com.github.lucacampanella.callgraphflows.staticanalyzer.testclasses.InlinableFlowInIfTestFlow;
+import com.github.lucacampanella.callgraphflows.staticanalyzer.testclasses.KotlinTestFlowDecompiled;
+import com.github.lucacampanella.callgraphflows.staticanalyzer.testclasses.LateInitiateFlowTestFlow;
+import com.github.lucacampanella.callgraphflows.staticanalyzer.testclasses.MethodInvocationTestFlow;
+import com.github.lucacampanella.callgraphflows.staticanalyzer.testclasses.NestedIfsTestFlow;
+import com.github.lucacampanella.callgraphflows.staticanalyzer.testclasses.NestedMethodInvocationsTestFlow;
+import com.github.lucacampanella.callgraphflows.staticanalyzer.testclasses.NoCallMethodClass;
+import com.github.lucacampanella.callgraphflows.staticanalyzer.testclasses.ReturnTestFlow;
+import com.github.lucacampanella.callgraphflows.staticanalyzer.testclasses.ReturnThrowBreakContinueTestFlow;
+import com.github.lucacampanella.callgraphflows.staticanalyzer.testclasses.SimpleTestFlow;
+import com.github.lucacampanella.callgraphflows.staticanalyzer.testclasses.SimplifiedNestedIfsTestFlow;
+import com.github.lucacampanella.callgraphflows.staticanalyzer.testclasses.SubFlowAnalysisTestFlow;
+import com.github.lucacampanella.callgraphflows.staticanalyzer.testclasses.SubFlowInitializationTestFlow;
+import com.github.lucacampanella.callgraphflows.staticanalyzer.testclasses.ThrowTestFlow;
+import com.github.lucacampanella.callgraphflows.staticanalyzer.testclasses.WhileForEachTestFlow;
 import com.github.lucacampanella.callgraphflows.staticanalyzer.testclasses.subclassestests.DoubleExtendingSuperclassTestFlow;
 import com.github.lucacampanella.callgraphflows.staticanalyzer.testclasses.subclassestests.ExtendingSuperclassTestFlow;
 import com.github.lucacampanella.callgraphflows.staticanalyzer.testclasses.subclassestests.InitiatorBaseFlow;
@@ -17,15 +56,6 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spoon.reflect.declaration.CtClass;
-
-import java.io.IOException;
-import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import static com.github.lucacampanella.TestUtils.fromClassSrcToPath;
-import static org.assertj.core.api.Assertions.assertThat;
 
 public class GeneralTests {
     private static final Logger LOGGER = LoggerFactory.getLogger(StaticAnalyzerUtilsTest.class);
@@ -243,7 +273,7 @@ public class GeneralTests {
                 DoubleExtendingSuperclassTestFlow.class);
         final AnalysisResult analysisResult =
                 sourceClassAnalyzerFromClasses.analyzeFlowLogicClass(DoubleExtendingSuperclassTestFlow.Initiator.class);
-        LOGGER.info("{}", analysisResult.getStatements());
+        //LOGGER.info("{}", analysisResult.getStatements());
         DrawerUtil.drawFromAnalysis(analysisResult, DrawerUtil.DEFAULT_OUT_DIR);
         assertThat(analysisResult.getGraphicRepresentationNoTitles().getMainSubFlow().toString())
                 .contains("initiateFlow");

@@ -1,5 +1,9 @@
 package com.github.lucacampanella.callgraphflows.staticanalyzer;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
 import com.github.lucacampanella.callgraphflows.staticanalyzer.matchers.MatcherHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,8 +13,6 @@ import spoon.reflect.declaration.CtClass;
 import spoon.reflect.declaration.CtMethod;
 import spoon.reflect.reference.CtTypeParameterReference;
 import spoon.reflect.reference.CtTypeReference;
-
-import java.util.*;
 
 public class ClassCallStackHolder {
 
@@ -62,9 +64,9 @@ public class ClassCallStackHolder {
             }
         }
 
-        LOGGER.warn("Couldn't find corresponding method in the call stack for method {} even if should have been found, " +
-                        "going on with the default executable, this can cause wrongly drawn graphs",
-                correspondingMethod.getSimpleName());
+        //LOGGER.warn("Couldn't find corresponding method in the call stack for method {} even if should have been found, " +
+                        //"going on with the default executable, this can cause wrongly drawn graphs",
+                //correspondingMethod.getSimpleName());
 
         return correspondingMethod;
     }
@@ -78,8 +80,8 @@ public class ClassCallStackHolder {
                 for(CtTypeReference actualTypeArg : actualTypeArguments) {
                     if(actualTypeArg.getTypeParameterDeclaration().equals(typeParameterRef.getTypeDeclaration())) {
                         if(actualTypeArg == elem) {
-                            LOGGER.warn("Couldn't retrieve generics for type {}, continuing without." +
-                                    "This can result in the arrows not drawn correctly", elem);
+                            //LOGGER.warn("Couldn't retrieve generics for type {}, continuing without." +
+                            //        "This can result in the arrows not drawn correctly", elem);
                             return elem;
                         }
                         return resolveEventualGenerics(actualTypeArg);

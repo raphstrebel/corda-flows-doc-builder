@@ -1,15 +1,17 @@
 package com.github.lucacampanella.callgraphflows.staticanalyzer;
 
-import net.corda.core.flows.InitiatingFlow;
-import net.corda.core.flows.StartableByRPC;
-import spoon.reflect.declaration.CtClass;
-
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import net.corda.core.flows.InitiatingFlow;
+import net.corda.core.flows.StartableByRPC;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import spoon.reflect.declaration.CtClass;
 
 public class ClassDescriptionContainer {
     private String simpleName;
@@ -21,6 +23,8 @@ public class ClassDescriptionContainer {
     private static final List<Class<? extends Annotation>> importantAnnotations =
             Arrays.asList(InitiatingFlow.class, StartableByRPC.class);
     private Set<String> annotations = new HashSet<>();
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ClassDescriptionContainer.class);
 
     public ClassDescriptionContainer(String simpleName, String containingClassName, String packageName,
                                      String fullyQualifiedName, String comments, Set<String> annotations) {
@@ -38,6 +42,12 @@ public class ClassDescriptionContainer {
         String packageName;
         String fullyQualifiedName;
         String comments;
+
+        //LOGGER.info("ClassDescriptionContainer klass : {}", klass);
+
+        if(klass == null) {
+            throw new IllegalArgumentException("klass is null");
+        }
 
         simpleName = klass.getSimpleName();
         containingClassName = klass.getTopLevelType().getSimpleName() == simpleName ?

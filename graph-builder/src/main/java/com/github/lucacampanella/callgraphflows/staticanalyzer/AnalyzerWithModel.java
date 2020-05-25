@@ -1,5 +1,12 @@
 package com.github.lucacampanella.callgraphflows.staticanalyzer;
 
+import java.lang.annotation.Annotation;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 import com.github.lucacampanella.callgraphflows.staticanalyzer.matchers.MatcherHelper;
 import net.corda.core.flows.FlowLogic;
 import net.corda.core.flows.InitiatedBy;
@@ -16,10 +23,8 @@ import spoon.reflect.visitor.filter.AnnotationFilter;
 import spoon.reflect.visitor.filter.NamedElementFilter;
 import spoon.reflect.visitor.filter.TypeFilter;
 import spoon.support.reflect.code.CtFieldReadImpl;
-
-import java.lang.annotation.Annotation;
-import java.util.*;
-import java.util.stream.Collectors;
+import spoon.support.reflect.declaration.CtClassImpl;
+//import javassist.CtClass;
 
 public class AnalyzerWithModel {
 
@@ -60,15 +65,46 @@ public class AnalyzerWithModel {
     }
 
     public AnalysisResult analyzeFlowLogicClass(CtClass klass) throws AnalysisErrorException {
+
         if(classToAnalysisResultMap.containsKey(klass)) {
-            LOGGER.info("*** class {} already analyzed, using cached result", klass.getQualifiedName());
+            //LOGGER.info("*** class {} already analyzed, using cached result", klass.getQualifiedName());
             return classToAnalysisResultMap.get(klass);
         }
         else {
             if(!klass.isSubtypeOf(MatcherHelper.getTypeReference(FlowLogic.class))) {
-                throw new IllegalArgumentException("Class " +klass.getQualifiedName() +" doesn't extend FlowLogic");
+                LOGGER.info("----------------------------------------------------------------------------------------------------------------------");
+
+                LOGGER.info("analyzing class : {}",klass.getQualifiedName());
+
+                //LOGGER.info("spoon model packages : {}", model.getAllPackages());
+
+                //LOGGER.info("class name : {}", klass.getSimpleName());
+                //LOGGER.info("super class name : {}", klass.getSuperclass().getSimpleName());
+                //LOGGER.info("super class children : {}", klass.getSuperclass().getDirectChildren());
+                //LOGGER.info("super class class : {}", klass.getSuperclass().getClass());
+                //LOGGER.info("super class parent : {}", klass.getSuperclass().getParent());
+                //LOGGER.info("super class short repr : {}", klass.getSuperclass().getShortRepresentation());
+                //LOGGER.info("super class ref types : {}", klass.getSuperclass().getReferencedTypes());
+                //LOGGER.info("super class type erasure : {}", klass.getSuperclass().getTypeErasure());
+                //LOGGER.info("super class qualif name : {}", klass.getSuperclass().getQualifiedName());
+
+                //LOGGER.info("super class type declaration : {}", klass.getSuperclass().getTypeDeclaration()); // null
+                //LOGGER.info("super class declaration : {}", klass.getSuperclass().getDeclaration()); // null
+                //LOGGER.info("super class unbox : {}", klass.getSuperclass().unbox()); // same as getSuperclass()
+                //LOGGER.info("super class modifiers : {}", klass.getSuperclass().getModifiers()); // []
+                //LOGGER.info("super class type param declaration : {}", klass.getSuperclass().getTypeParameterDeclaration());// null
+                //LOGGER.info("super class declaring type : {}", klass.getSuperclass().getDeclaringType()); // null
+                //LOGGER.info("super class all fields : {}", klass.getSuperclass().getAllFields()); // []
+                //LOGGER.info("super class actual type args : {}", klass.getSuperclass().getActualTypeArguments()); // not important
+                //LOGGER.info("super class original src fragment : {}", klass.getSuperclass().getOriginalSourceFragment()); // error
+                //LOGGER.info("super class declared fields : {}", klass.getSuperclass().getDeclaredFields()); // []
+
+                LOGGER.info("----------------------------------------------------------------------------------------------------------------------");
+                //throw new IllegalArgumentException("Class " +klass.getQualifiedName() +" doesn't extend FlowLogic");
             }
-            LOGGER.info("*** analyzing class {}", klass.getQualifiedName());
+            //LOGGER.info("*** analyzing class {}", klass.getQualifiedName());
+
+            LOGGER.info("statically analyzing class : {}", klass.getSimpleName());
             final CtMethod callMethod = StaticAnalyzerUtils.findCallMethod(klass);
             if (callMethod == null) {
                 throw new AnalysisErrorException(klass, "No call method found");
@@ -85,6 +121,9 @@ public class AnalyzerWithModel {
 
             AnalysisResult res = new AnalysisResult(ClassDescriptionContainer.fromClass(klass));
             res.getClassDescription().setReturnType(StaticAnalyzerUtils.nullifyIfVoidTypeAndGetString(callMethod.getType()));
+
+            LOGGER.info("call method body statements : {}", callMethod.getBody().getStatements());
+
 
             final Branch interestingStatements = MatcherHelper.fromCtStatementsToStatements(
                     callMethod.getBody().getStatements(), this);
@@ -107,10 +146,10 @@ public class AnalyzerWithModel {
                 if(drawArrows) {
                     final boolean validProtocol =
                             res.checkIfContainsValidProtocolAndSetupLinks();//check the protocol and draws possible links
-                    LOGGER.info("Class {} contains valid protocol? {}", klass.getQualifiedName(), validProtocol);
+                    //LOGGER.info("Class {} contains valid protocol? {}", klass.getQualifiedName(), validProtocol);
                 }
                 else {
-                    LOGGER.info("Set on not drawing arrows, the protocol is not figured out");
+                    //LOGGER.info("Set on not drawing arrows, the protocol is not figured out");
                 }
             }
 
@@ -128,9 +167,25 @@ public class AnalyzerWithModel {
     }
 
     public List<CtClass> getClassesByAnnotation(Class annotationClass) {
+
         List<CtElement> elements = model.getElements(new AnnotationFilter<>(annotationClass));
 
-        return  elements.stream()
+        LOGGER.info("------------------------ GET CLASSES BY ANNOTATION ------------------------");
+        for(CtElement element: elements) {
+            CtClassImpl e = (CtClassImpl) element;
+
+            //if(e.getSimpleName().equals("BulkIssueEventInitiator")) {
+            //    LOGGER.info(" element name : {}", e.getSimpleName());
+            //    LOGGER.info(" element class : {}", e.getClass());
+            //    LOGGER.info(" element superclass : {}", e.getSuperclass());
+            //    LOGGER.info(" element superclass class : {}", e.getSuperclass().getClass());
+            //    LOGGER.info(" element superclass getTypeDeclaration : {}", e.getSuperclass().getTypeDeclaration());
+            //}
+
+             //CtRef... to CtClassImpl ? -> check google?..
+        }
+
+        return elements.stream()
                 .map(CtClass.class::cast)
                 .collect(Collectors.toList());
     }
@@ -151,8 +206,8 @@ public class AnalyzerWithModel {
                         try {
                             result = ctAnnotation.getActualAnnotation().annotationType() == InitiatedBy.class;
                         } catch (Exception e) {
-                            LOGGER.warn("Couldn't retrieve real representation for annotation {} for class {}, " +
-                                    "continuing without analyzing this one", ctAnnotation, klass.getQualifiedName());
+                            //LOGGER.warn("Couldn't retrieve real representation for annotation {} for class {}, " +
+                            //"continuing without analyzing this one", ctAnnotation, klass.getQualifiedName());
                         }
                         return result;
                     }).findFirst();
@@ -161,11 +216,11 @@ public class AnalyzerWithModel {
                         initiatedByAnnotationOptional.get().getAllValues().get("value");
 
                 if(((CtFieldReadImpl) referenceToClass).getVariable().getDeclaringType() == null){
-                    LOGGER.warn("Couldn't retrieve declaration of class declared in the @InitiatedBy " +
-                            "annotation. Skipping this class in finding the responder flow " +
-                            "\nThis could result in a problem in the produced graph." +
-                            " \nDeclared reference: {} \nDeclaring class: {} " +
-                            "\nInitiatingClass {}", referenceToClass, klass, initiatingClass);
+                    //LOGGER.warn("Couldn't retrieve declaration of class declared in the @InitiatedBy " +
+                    //        "annotation. Skipping this class in finding the responder flow " +
+                    //        "\nThis could result in a problem in the produced graph." +
+                    //        " \nDeclared reference: {} \nDeclaring class: {} " +
+                    //        "\nInitiatingClass {}", referenceToClass, klass, initiatingClass);
                     continue;
                 }
 

@@ -1,8 +1,38 @@
 package com.github.lucacampanella.callgraphflows.staticanalyzer.matchers;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import com.github.lucacampanella.callgraphflows.staticanalyzer.AnalyzerWithModel;
 import com.github.lucacampanella.callgraphflows.staticanalyzer.Branch;
-import com.github.lucacampanella.callgraphflows.staticanalyzer.instructions.*;
+import com.github.lucacampanella.callgraphflows.staticanalyzer.instructions.CodeFlowBreak;
+import com.github.lucacampanella.callgraphflows.staticanalyzer.instructions.DoWhile;
+import com.github.lucacampanella.callgraphflows.staticanalyzer.instructions.FlowAssignment;
+import com.github.lucacampanella.callgraphflows.staticanalyzer.instructions.FlowConstructor;
+import com.github.lucacampanella.callgraphflows.staticanalyzer.instructions.For;
+import com.github.lucacampanella.callgraphflows.staticanalyzer.instructions.ForEach;
+import com.github.lucacampanella.callgraphflows.staticanalyzer.instructions.IfElse;
+import com.github.lucacampanella.callgraphflows.staticanalyzer.instructions.InitiateFlow;
+import com.github.lucacampanella.callgraphflows.staticanalyzer.instructions.MethodInvocation;
+import com.github.lucacampanella.callgraphflows.staticanalyzer.instructions.Receive;
+import com.github.lucacampanella.callgraphflows.staticanalyzer.instructions.Send;
+import com.github.lucacampanella.callgraphflows.staticanalyzer.instructions.SendAndReceive;
+import com.github.lucacampanella.callgraphflows.staticanalyzer.instructions.SessionAssignment;
+import com.github.lucacampanella.callgraphflows.staticanalyzer.instructions.StatementInterface;
+import com.github.lucacampanella.callgraphflows.staticanalyzer.instructions.StatementWithRelevantMethods;
+import com.github.lucacampanella.callgraphflows.staticanalyzer.instructions.SubFlowBuilder;
+import com.github.lucacampanella.callgraphflows.staticanalyzer.instructions.TransactionBuilder;
+import com.github.lucacampanella.callgraphflows.staticanalyzer.instructions.While;
 import com.github.lucacampanella.callgraphflows.utils.Utils;
 import net.corda.core.flows.FlowLogic;
 import net.corda.core.flows.FlowSession;
@@ -10,7 +40,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spoon.Launcher;
 import spoon.reflect.CtModel;
-import spoon.reflect.code.*;
+import spoon.reflect.code.CtAbstractInvocation;
+import spoon.reflect.code.CtAssignment;
+import spoon.reflect.code.CtCFlowBreak;
+import spoon.reflect.code.CtDo;
+import spoon.reflect.code.CtFor;
+import spoon.reflect.code.CtForEach;
+import spoon.reflect.code.CtIf;
+import spoon.reflect.code.CtLocalVariable;
+import spoon.reflect.code.CtStatement;
+import spoon.reflect.code.CtWhile;
 import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtMethod;
 import spoon.reflect.declaration.CtTypedElement;
@@ -19,13 +58,6 @@ import spoon.reflect.visitor.filter.NamedElementFilter;
 import spoon.reflect.visitor.filter.TypeFilter;
 import spoon.support.compiler.VirtualFile;
 import spoon.template.TemplateMatcher;
-
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.lang.reflect.Method;
-import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Helper class that handles patterns
@@ -241,9 +273,9 @@ public final class MatcherHelper {
                                                                                            AnalyzerWithModel analyzer) {
         CtTypedElement elem = (CtTypedElement) statement;
         if(elem.getType() == null) {
-            LOGGER.warn("Couldn't get type of {}, continuing without trying to figure out " +
-                    "if containts a flow session or a flow logic type"
-                    + "\nThis could result in a problem in the produced graph", statement);
+            //LOGGER.warn("Couldn't get type of {}, continuing without trying to figure out " +
+            //        "if containts a flow session or a flow logic type"
+            //        + "\nThis could result in a problem in the produced graph", statement);
             return null;
         }
 

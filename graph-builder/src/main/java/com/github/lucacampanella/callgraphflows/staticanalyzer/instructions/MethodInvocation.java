@@ -1,27 +1,35 @@
 package com.github.lucacampanella.callgraphflows.staticanalyzer.instructions;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
 import com.github.lucacampanella.callgraphflows.graphics.components2.GBaseComponent;
 import com.github.lucacampanella.callgraphflows.graphics.components2.GBaseText;
 import com.github.lucacampanella.callgraphflows.graphics.components2.GConditionalBranchIndented;
-import com.github.lucacampanella.callgraphflows.staticanalyzer.*;
+import com.github.lucacampanella.callgraphflows.staticanalyzer.AnalyzerWithModel;
+import com.github.lucacampanella.callgraphflows.staticanalyzer.Branch;
+import com.github.lucacampanella.callgraphflows.staticanalyzer.ClassDescriptionContainer;
+import com.github.lucacampanella.callgraphflows.staticanalyzer.CombinationsHolder;
+import com.github.lucacampanella.callgraphflows.staticanalyzer.StaticAnalyzerUtils;
 import com.github.lucacampanella.callgraphflows.staticanalyzer.matchers.MatcherHelper;
 import com.github.lucacampanella.callgraphflows.utils.Utils;
 import net.corda.core.flows.FlowLogic;
 import net.corda.core.flows.FlowSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import spoon.reflect.code.*;
+import spoon.reflect.code.CtAbstractInvocation;
+import spoon.reflect.code.CtExpression;
+import spoon.reflect.code.CtInvocation;
+import spoon.reflect.code.CtStatement;
+import spoon.reflect.code.CtVariableRead;
 import spoon.reflect.cu.position.NoSourcePosition;
 import spoon.reflect.declaration.CtClass;
 import spoon.reflect.declaration.CtExecutable;
 import spoon.reflect.declaration.CtMethod;
 import spoon.reflect.declaration.CtParameter;
 import spoon.support.reflect.code.CtSuperAccessImpl;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 
 public class MethodInvocation extends InstructionStatement {
 
@@ -57,7 +65,7 @@ public class MethodInvocation extends InstructionStatement {
             try {
                 declaration = inv.getExecutable().getDeclaration();
             } catch (NullPointerException e) {
-                LOGGER.warn("Couldn't retrieve the declaration of method {} adding an empty one", inv);
+                //LOGGER.warn("Couldn't retrieve the declaration of method {} adding an empty one", inv);
             }
 
             if(statement instanceof CtInvocation) {
@@ -95,7 +103,7 @@ public class MethodInvocation extends InstructionStatement {
                                 analyzer.getCurrClassCallStackHolder().resolveEventualGenerics(
                                         inv.getExecutable().getDeclaration().getType()));
             } catch(NullPointerException e) {
-                LOGGER.warn("Couldn't figure out the return type of method {}, continuing without", inv);
+                //LOGGER.warn("Couldn't figure out the return type of method {}, continuing without", inv);
             }
 
             final List<CtExpression> arguments = inv.getArguments();
@@ -135,7 +143,7 @@ public class MethodInvocation extends InstructionStatement {
                         dynamicallyDispatchedExecutable.getBody().getStatements(), analyzer);
                 methodInvocation.body.addIfRelevantForLoopFlowBreakAnalysis(bodyStatements);
             } catch (NullPointerException e) {
-                LOGGER.warn("Couldn't retrieve the body of method {} adding an empty one", inv);
+                ////LOGGER.warn("Couldn't retrieve the body of method {} adding an empty one", inv);
             }
             methodInvocation.buildGraphElem();
         }
@@ -149,7 +157,7 @@ public class MethodInvocation extends InstructionStatement {
                     ((CtParameter) inv.getExecutable().getDeclaration().getParameters().get(i))
                             .getSimpleName());
         }catch (NullPointerException e) {
-            LOGGER.warn("Error while retrieving parameter name for method: {}", inv);
+            //LOGGER.warn("Error while retrieving parameter name for method: {}", inv);
         }
     }
 

@@ -1,5 +1,9 @@
 package com.github.lucacampanella.callgraphflows;
 
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.util.List;
+
 import com.github.lucacampanella.callgraphflows.asciidoc.AsciiDocBuilder;
 import com.github.lucacampanella.callgraphflows.asciidoc.AsciiDocIndexBuilder;
 import com.github.lucacampanella.callgraphflows.graphics.components2.GGraphBuilder;
@@ -14,10 +18,6 @@ import com.github.lucacampanella.callgraphflows.staticanalyzer.instructions.Stat
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spoon.reflect.declaration.CtClass;
-
-import java.io.IOException;
-import java.nio.file.Paths;
-import java.util.List;
 
 public final class DrawerUtil {
 
@@ -40,9 +40,12 @@ public final class DrawerUtil {
 
         final List<CtClass> startableByRPCClasses = analyzerWithModel.getClassesToBeAnalyzed();
         LOGGER.info("Found these classes annotated with @StartableByRPC: ");
+        for(CtClass c: startableByRPCClasses) {
+            LOGGER.info(c.getSimpleName());
+        }
         Paths.get(outPath, IMAGES_FOLDER_NAME).toFile().mkdirs(); //create all directories necessary for the output
         for (CtClass klass : startableByRPCClasses) {
-            LOGGER.info("**** Analyzing class {} ", klass.getQualifiedName());
+            //LOGGER.info("**** Analyzing class {} ", klass.getQualifiedName());
             drawFromClass(analyzerWithModel, klass, outPath);
             asciiDocIndexBuilder.addFile(klass.getQualifiedName() + ".adoc");
         }

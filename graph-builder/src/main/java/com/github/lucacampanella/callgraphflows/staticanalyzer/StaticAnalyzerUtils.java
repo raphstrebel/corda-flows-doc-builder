@@ -1,6 +1,11 @@
 package com.github.lucacampanella.callgraphflows.staticanalyzer;
 
-import com.github.lucacampanella.callgraphflows.staticanalyzer.instructions.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import com.github.lucacampanella.callgraphflows.staticanalyzer.instructions.MethodInvocation;
 import com.github.lucacampanella.callgraphflows.staticanalyzer.matchers.MatcherHelper;
 import kotlin.Unit;
 import net.corda.core.flows.FlowSession;
@@ -16,9 +21,6 @@ import spoon.reflect.declaration.CtMethod;
 import spoon.reflect.reference.CtTypeReference;
 import spoon.reflect.visitor.filter.NamedElementFilter;
 import spoon.reflect.visitor.filter.TypeFilter;
-
-import java.util.*;
-import java.util.stream.Collectors;
 
 public class StaticAnalyzerUtils {
 
@@ -351,9 +353,9 @@ public class StaticAnalyzerUtils {
                 getElements(new TypeFilter<>(CtVariableRead.class))
                 .stream().filter(varRead -> {
                     if(varRead.getType() == null) {
-                        LOGGER.warn("Couldn't find out type of {} in statement {} : " +
-                                "ignoring the type for target session search"
-                                + "\nThis could result in a problem in the produced graph", varRead, ctStatement);
+                        //LOGGER.warn("Couldn't find out type of {} in statement {} : " +
+                        //        "ignoring the type for target session search"
+                        //        + "\nThis could result in a problem in the produced graph", varRead, ctStatement);
                         return false;
                     }
                     return  analyzer.getCurrClassCallStackHolder().resolveEventualGenerics(varRead.getType())
