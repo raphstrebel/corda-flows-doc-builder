@@ -27,10 +27,6 @@ public class SourceAndJarAnalyzer extends AnalyzerWithModel {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SourceAndJarAnalyzer.class);
 
-    public SourceAndJarAnalyzer(List<String> pathsToFoldersOrSrc) throws IOException {
-        init(pathsToFoldersOrSrc, null, null, false);
-    }
-
     public SourceAndJarAnalyzer(String[] unsortedTypesFiles, DecompilerEnum decompilerEnum,
                                 boolean analyzeOnlySources) throws IOException {
         List<String> jarPaths = new ArrayList<>();
@@ -44,11 +40,6 @@ public class SourceAndJarAnalyzer extends AnalyzerWithModel {
             }
         }
         init(otherPaths, jarPaths, decompilerEnum, analyzeOnlySources);
-    }
-
-    public SourceAndJarAnalyzer(List<String> pathsToFoldersOrSrc, List<String> pathsToJars,
-                                DecompilerEnum decompilerEnum, boolean analyzeOnlySources) throws IOException {
-        init(pathsToFoldersOrSrc, pathsToJars, decompilerEnum, analyzeOnlySources);
     }
 
     private void init(List<String> pathsToFoldersOrSrc, List<String> pathsToJars, DecompilerEnum decompilerEnum,

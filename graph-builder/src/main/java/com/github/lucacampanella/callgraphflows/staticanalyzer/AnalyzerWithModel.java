@@ -3,10 +3,10 @@ package com.github.lucacampanella.callgraphflows.staticanalyzer;
 import static java.lang.reflect.Modifier.ABSTRACT;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import javassist.ClassPool;
 import javassist.CtClass;
@@ -20,6 +20,7 @@ import spoon.reflect.CtModel;
 import spoon.reflect.declaration.CtElement;
 import spoon.reflect.visitor.filter.AnnotationFilter;
 import spoon.reflect.visitor.filter.NamedElementFilter;
+import spoon.support.reflect.declaration.CtClassImpl;
 
 public class AnalyzerWithModel {
 
@@ -205,15 +206,28 @@ public class AnalyzerWithModel {
 		//((CtClassImpl) elements.get(0)).getActualClass()
 
 		ClassPool pool = new ClassPool(ClassPool.getDefault());
-		pool.appendClassPath("./otherlib/slf4j-api-1.7.6.jar");
-		CtClass ctClass = pool.get("org.slf4j.Logger");
+
+		// should be /home/raphael/Desktop/cardossier/core/cardossier-core-flows/build/libs/cardossier-core-flows.jar
+
+		LOGGER.info("-------------------------------------------------------------");
+		LOGGER.info("The path to JAR :{}", pathToSrc[0]);
+		//pool.getCtClass();
+
+		pool.appendClassPath(pathToSrc[0]);
+		//CtClass ctClass = pool.get("org.slf4j.Logger");
 
 		//ClassPool pool = ClassPool.getDefault();
 		//CtClass ctClass = pool.makeClass(new FileInputStream(((CtClassImpl) elements.get(0)).getQualifiedName()));
 
-		return elements.stream()
-				.map(CtClass.class::cast)
-				.collect(Collectors.toList());
+		List<CtClass> allClasses = new ArrayList<>();
+
+		for(CtElement e: elements) {
+			allClasses.add(pool.getCtClass(((CtClassImpl) e).getQualifiedName()));
+		}
+
+		return allClasses;
+
+		//return elements.stream().map(CtClass.class::cast).collect(Collectors.toList());
 	}
 
 	public List<CtClass> getClassesToBeAnalyzed() throws IOException, NotFoundException {

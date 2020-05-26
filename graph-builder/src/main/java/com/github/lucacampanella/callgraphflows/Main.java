@@ -68,6 +68,10 @@ public class Main implements Callable<Void> {
         LOGGER = LoggerFactory.getLogger(Main.class);
 
         LOGGER.trace("Logger level = {}", loggerLevel);
+
+        LOGGER.info("THIS IS IMPORTANT -------------------------------------------------------------------");
+        LOGGER.info("File paths {}", filesPaths);
+
         SourceAndJarAnalyzer analyzer = new SourceAndJarAnalyzer(filesPaths,
                 DecompilerEnum.fromStringOrDefault(decompilerName), analyzeOnlySources);
 
