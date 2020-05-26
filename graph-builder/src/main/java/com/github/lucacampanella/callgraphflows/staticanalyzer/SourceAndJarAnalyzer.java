@@ -1,5 +1,17 @@
 package com.github.lucacampanella.callgraphflows.staticanalyzer;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javassist.CtClass;
+import javassist.NotFoundException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.LineIterator;
 import org.slf4j.Logger;
@@ -7,13 +19,6 @@ import org.slf4j.LoggerFactory;
 import spoon.Launcher;
 import spoon.SpoonException;
 import spoon.decompiler.Decompiler;
-import spoon.reflect.declaration.CtClass;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Paths;
-import java.util.*;
-import java.util.stream.Collectors;
 
 public class SourceAndJarAnalyzer extends AnalyzerWithModel {
 
@@ -155,12 +160,12 @@ public class SourceAndJarAnalyzer extends AnalyzerWithModel {
     }
 
     @Override
-    public List<CtClass> getClassesToBeAnalyzed() {
+    public List<CtClass> getClassesToBeAnalyzed() throws IOException, NotFoundException {
         if(!analyzeOnlySources) {
             return super.getClassesToBeAnalyzed();
         }
         return super.getClassesToBeAnalyzed().stream().filter(klass ->
-            srcClassNamesSet.contains(klass.getTopLevelType().getQualifiedName())).collect(Collectors.toList());
+            srcClassNamesSet.contains(klass.getName())).collect(Collectors.toList());
     }
 
 }

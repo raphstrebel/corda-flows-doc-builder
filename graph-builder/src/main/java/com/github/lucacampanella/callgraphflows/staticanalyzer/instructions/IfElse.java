@@ -1,5 +1,7 @@
 package com.github.lucacampanella.callgraphflows.staticanalyzer.instructions;
 
+import java.util.Optional;
+
 import com.github.lucacampanella.callgraphflows.graphics.components2.GBaseText;
 import com.github.lucacampanella.callgraphflows.graphics.components2.GIfElseIndented;
 import com.github.lucacampanella.callgraphflows.graphics.components2.GInstruction;
@@ -7,12 +9,11 @@ import com.github.lucacampanella.callgraphflows.staticanalyzer.AnalyzerWithModel
 import com.github.lucacampanella.callgraphflows.staticanalyzer.Branch;
 import com.github.lucacampanella.callgraphflows.staticanalyzer.CombinationsHolder;
 import com.github.lucacampanella.callgraphflows.staticanalyzer.matchers.MatcherHelper;
+import javassist.NotFoundException;
 import spoon.reflect.code.CtExpression;
 import spoon.reflect.code.CtIf;
 import spoon.reflect.code.CtStatement;
 import spoon.reflect.code.CtStatementList;
-
-import java.util.Optional;
 
 public class IfElse extends BranchingStatement {
 
@@ -25,7 +26,7 @@ public class IfElse extends BranchingStatement {
         super();
     }
 
-    public static IfElse fromCtStatement(CtStatement statement, AnalyzerWithModel analyzer) {
+    public static IfElse fromCtStatement(CtStatement statement, AnalyzerWithModel analyzer) throws NotFoundException {
         IfElse ifElse = new IfElse();
 
         CtIf ifStatement = (CtIf) statement;

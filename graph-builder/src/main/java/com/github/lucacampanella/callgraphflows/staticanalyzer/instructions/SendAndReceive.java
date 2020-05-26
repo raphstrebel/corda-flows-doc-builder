@@ -1,15 +1,20 @@
 package com.github.lucacampanella.callgraphflows.staticanalyzer.instructions;
 
+import java.util.Optional;
+
 import com.github.lucacampanella.callgraphflows.graphics.components2.GBaseSimpleComponent;
-import com.github.lucacampanella.callgraphflows.utils.Utils;
 import com.github.lucacampanella.callgraphflows.staticanalyzer.AnalyzerWithModel;
 import com.github.lucacampanella.callgraphflows.staticanalyzer.StaticAnalyzerUtils;
 import com.github.lucacampanella.callgraphflows.staticanalyzer.matchers.MatcherHelper;
-import spoon.reflect.code.*;
+import com.github.lucacampanella.callgraphflows.utils.Utils;
+import javassist.NotFoundException;
+import spoon.reflect.code.CtFieldRead;
+import spoon.reflect.code.CtInvocation;
+import spoon.reflect.code.CtLambda;
+import spoon.reflect.code.CtStatement;
+import spoon.reflect.code.CtTypeAccess;
 import spoon.reflect.declaration.CtTypedElement;
 import spoon.reflect.reference.CtTypeReference;
-
-import java.util.Optional;
 
 public class SendAndReceive extends InstructionStatement implements StatementWithCompanionInterface {
 
@@ -26,7 +31,7 @@ public class SendAndReceive extends InstructionStatement implements StatementWit
         super();
     }
 
-    public static SendAndReceive fromCtStatement(CtStatement statement, AnalyzerWithModel analyzer) {
+    public static SendAndReceive fromCtStatement(CtStatement statement, AnalyzerWithModel analyzer) throws NotFoundException {
         SendAndReceive sendAndReceive = new SendAndReceive();
         sendAndReceive.line = statement.getPosition().getLine();
         sendAndReceive.internalMethodInvocations.add(StaticAnalyzerUtils.getAllRelevantMethodInvocations(statement,

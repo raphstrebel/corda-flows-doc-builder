@@ -1,13 +1,19 @@
 package com.github.lucacampanella.callgraphflows.staticanalyzer.instructions;
 
+import java.util.Optional;
+
 import com.github.lucacampanella.callgraphflows.graphics.components2.GBaseSimpleComponent;
-import com.github.lucacampanella.callgraphflows.utils.Utils;
 import com.github.lucacampanella.callgraphflows.staticanalyzer.AnalyzerWithModel;
 import com.github.lucacampanella.callgraphflows.staticanalyzer.StaticAnalyzerUtils;
 import com.github.lucacampanella.callgraphflows.staticanalyzer.matchers.MatcherHelper;
-import spoon.reflect.code.*;
-
-import java.util.Optional;
+import com.github.lucacampanella.callgraphflows.utils.Utils;
+import javassist.NotFoundException;
+import spoon.reflect.code.CtAbstractInvocation;
+import spoon.reflect.code.CtFieldRead;
+import spoon.reflect.code.CtInvocation;
+import spoon.reflect.code.CtLambda;
+import spoon.reflect.code.CtStatement;
+import spoon.reflect.code.CtTypeAccess;
 
 public class Receive extends InstructionStatement implements StatementWithCompanionInterface {
 
@@ -23,7 +29,7 @@ public class Receive extends InstructionStatement implements StatementWithCompan
         super();
     }
 
-    public static Receive fromCtStatement(CtStatement statement, AnalyzerWithModel analyzer) {
+    public static Receive fromCtStatement(CtStatement statement, AnalyzerWithModel analyzer) throws NotFoundException {
         Receive receive = new Receive();
         receive.line = statement.getPosition().getLine();
         receive.internalMethodInvocations.add(StaticAnalyzerUtils.getAllRelevantMethodInvocations(statement, analyzer));

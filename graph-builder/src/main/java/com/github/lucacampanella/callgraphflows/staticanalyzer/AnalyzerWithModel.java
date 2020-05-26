@@ -2,14 +2,12 @@ package com.github.lucacampanella.callgraphflows.staticanalyzer;
 
 import static java.lang.reflect.Modifier.ABSTRACT;
 
-import java.lang.annotation.Annotation;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
-import com.github.lucacampanella.callgraphflows.staticanalyzer.matchers.MatcherHelper;
 import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.CtMethod;
@@ -19,16 +17,9 @@ import net.corda.core.flows.StartableByRPC;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spoon.reflect.CtModel;
-import spoon.reflect.code.CtExpression;
-import spoon.reflect.declaration.CtAnnotation;
 import spoon.reflect.declaration.CtElement;
 import spoon.reflect.visitor.filter.AnnotationFilter;
 import spoon.reflect.visitor.filter.NamedElementFilter;
-import spoon.reflect.visitor.filter.TypeFilter;
-import spoon.support.reflect.code.CtFieldReadImpl;
-import spoon.support.reflect.declaration.CtClassImpl;
-
-//import spoon.reflect.declaration.CtClass;
 
 public class AnalyzerWithModel {
 
@@ -37,6 +28,8 @@ public class AnalyzerWithModel {
 	private static boolean drawArrows = true;
 
 	protected CtModel model;
+
+	public static String[] pathToSrc;
 
 	protected String analysisName;
 
@@ -50,6 +43,10 @@ public class AnalyzerWithModel {
 
 	public static void setDrawArrows(boolean drawArrows) {
 		AnalyzerWithModel.drawArrows = drawArrows;
+	}
+
+	public static void setPathToSrc(String[] pathToSrc) {
+		AnalyzerWithModel.pathToSrc = pathToSrc;
 	}
 
 	public <T> CtClass getClass(Class<T> klass) {
@@ -139,8 +136,6 @@ public class AnalyzerWithModel {
 
 			AnalysisResult res = new AnalysisResult(ClassDescriptionContainer.fromClass(klass));
 
-			//boolean isVoid = callMethod.getReturnType().equals(Void.TYPE); // delete this
-
 			//res.getClassDescription().setReturnType(StaticAnalyzerUtils.nullifyIfVoidTypeAndGetString(callMethod.getType()));
 			res.getClassDescription().setReturnType(callMethod.getReturnType().getName());
 
@@ -180,7 +175,7 @@ public class AnalyzerWithModel {
 		}
 	}
 
-	public void setCurrentAnalyzingClass(CtClass klass) {
+	public void setCurrentAnalyzingClass(CtClass klass) throws NotFoundException {
 		currClassCallStackHolder = ClassCallStackHolder.fromCtClass(klass);
 	}
 
@@ -188,102 +183,112 @@ public class AnalyzerWithModel {
 		return currClassCallStackHolder;
 	}
 
-	public List<CtClass> getClassesByAnnotation(Class annotationClass) {
+	public List<CtClass> getClassesByAnnotation(Class annotationClass) throws IOException, NotFoundException {
 
 		List<CtElement> elements = model.getElements(new AnnotationFilter<>(annotationClass));
 
 		LOGGER.info("------------------------ GET CLASSES BY ANNOTATION ------------------------");
-		for (CtElement element : elements) {
-			CtClassImpl e = (CtClassImpl) element;
+		//for (CtElement element : elements) {
+		//	CtClassImpl e = (CtClassImpl) element;
+		//
+		//	//if(e.getSimpleName().equals("BulkIssueEventInitiator")) {
+		//	//    LOGGER.info(" element name : {}", e.getSimpleName());
+		//	//    LOGGER.info(" element class : {}", e.getClass());
+		//	//    LOGGER.info(" element superclass : {}", e.getSuperclass());
+		//	//    LOGGER.info(" element superclass class : {}", e.getSuperclass().getClass());
+		//	//    LOGGER.info(" element superclass getTypeDeclaration : {}", e.getSuperclass().getTypeDeclaration());
+		//	//}
+		//
+		//	//CtRef... to CtClassImpl ? -> check google?..
+		//}
 
-			//if(e.getSimpleName().equals("BulkIssueEventInitiator")) {
-			//    LOGGER.info(" element name : {}", e.getSimpleName());
-			//    LOGGER.info(" element class : {}", e.getClass());
-			//    LOGGER.info(" element superclass : {}", e.getSuperclass());
-			//    LOGGER.info(" element superclass class : {}", e.getSuperclass().getClass());
-			//    LOGGER.info(" element superclass getTypeDeclaration : {}", e.getSuperclass().getTypeDeclaration());
-			//}
+		//((CtClassImpl) elements.get(0)).getActualClass()
 
-			//CtRef... to CtClassImpl ? -> check google?..
-		}
+		ClassPool pool = new ClassPool(ClassPool.getDefault());
+		pool.appendClassPath("./otherlib/slf4j-api-1.7.6.jar");
+		CtClass ctClass = pool.get("org.slf4j.Logger");
+
+		//ClassPool pool = ClassPool.getDefault();
+		//CtClass ctClass = pool.makeClass(new FileInputStream(((CtClassImpl) elements.get(0)).getQualifiedName()));
 
 		return elements.stream()
 				.map(CtClass.class::cast)
 				.collect(Collectors.toList());
 	}
 
-	public List<CtClass> getClassesToBeAnalyzed() {
+	public List<CtClass> getClassesToBeAnalyzed() throws IOException, NotFoundException {
 		return getClassesByAnnotation(StartableByRPC.class);
 	}
 
 
-	public CtClass getDeeperClassInitiatedBy(CtClass initiatingClass) throws ClassNotFoundException {
-		CtClass deeperInitiatedByClass = null;
+	public CtClass getDeeperClassInitiatedBy(CtClass initiatingClass)
+			throws ClassNotFoundException, IOException, NotFoundException {
 		final List<CtClass> generalInitiatedByList = getClassesByAnnotation(InitiatedBy.class);
 		for (CtClass klass : generalInitiatedByList) {
 
-			Optional<CtAnnotation<? extends Annotation>> initiatedByAnnotationOptional =
-					klass.getAnnotations().stream().filter(ctAnnotation -> {
-						boolean result = false;
-						try {
-							result = ctAnnotation.getActualAnnotation().annotationType() == InitiatedBy.class;
-						}
-						catch (Exception e) {
-							//LOGGER.warn("Couldn't retrieve real representation for annotation {} for class {}, " +
-							//"continuing without analyzing this one", ctAnnotation, klass.getQualifiedName());
-						}
-						return result;
-					}).findFirst();
-			if (initiatedByAnnotationOptional.isPresent()) {
-				final CtExpression referenceToClass =
-						initiatedByAnnotationOptional.get().getAllValues().get("value");
+			if(klass.getAnnotation(InitiatedBy.class) != null) {
+				return klass;
 
-				if (((CtFieldReadImpl) referenceToClass).getVariable().getDeclaringType() == null) {
+
+			//Optional<CtAnnotation<? extends Annotation>> initiatedByAnnotationOptional =
+			//		klass.getAnnotations().stream().filter(ctAnnotation -> {
+			//			boolean result = false;
+			//			try {
+			//				result = ctAnnotation.getActualAnnotation().annotationType() == InitiatedBy.class;
+			//			}
+			//			catch (Exception e) {
+			//				//LOGGER.warn("Couldn't retrieve real representation for annotation {} for class {}, " +
+			//				//"continuing without analyzing this one", ctAnnotation, klass.getQualifiedName());
+			//			}
+			//			return result;
+			//		}).findFirst();
+			//if (initiatedByAnnotationOptional.isPresent()) {
+			//	final CtExpression referenceToClass =
+			//			initiatedByAnnotationOptional.get().getAllValues().get("value");
+
+				//if (((CtFieldReadImpl) referenceToClass).getVariable().getDeclaringType() == null) {
 					//LOGGER.warn("Couldn't retrieve declaration of class declared in the @InitiatedBy " +
 					//        "annotation. Skipping this class in finding the responder flow " +
 					//        "\nThis could result in a problem in the produced graph." +
 					//        " \nDeclared reference: {} \nDeclaring class: {} " +
 					//        "\nInitiatingClass {}", referenceToClass, klass, initiatingClass);
-					continue;
-				}
+					//continue;
+				//}
 
-				final CtClass correspondingInitiatingClass = (CtClass) ((CtFieldReadImpl) referenceToClass).getVariable()
-						.getDeclaringType().getTypeDeclaration();
+				//final CtClass correspondingInitiatingClass = (CtClass) ((CtFieldReadImpl) referenceToClass).getVariable()
+				//		.getDeclaringType().getTypeDeclaration();
 
-				if ((correspondingInitiatingClass.getReference().isSubtypeOf(initiatingClass.getReference())
-						|| initiatingClass.getReference().isSubtypeOf(correspondingInitiatingClass.getReference())) &&
-						(deeperInitiatedByClass == null ||
-								klass.getReference().isSubtypeOf(deeperInitiatedByClass.getReference()))) {
-					deeperInitiatedByClass = klass;
-				}
+				//if ((correspondingInitiatingClass.getReference().isSubtypeOf(initiatingClass.getReference())
+				//		|| initiatingClass.getReference().isSubtypeOf(correspondingInitiatingClass.getReference())) &&
+				//		(deeperInitiatedByClass == null ||
+				//				klass.getReference().isSubtypeOf(deeperInitiatedByClass.getReference()))) {
+			}
 			}
 
-		}
-
-		return deeperInitiatedByClass;
+		return null;
 	}
 
-	public CtClass getFurthestAwaySubclass(CtClass superClass) {
-		List<CtClass> allClasses = model.getElements(new TypeFilter<>(CtClass.class));
+	//public CtClass getFurthestAwaySubclass(CtClass superClass) {
+	//	List<CtClass> allClasses = model.getElements(new TypeFilter<>(CtClass.class));
+	//
+	//	CtClass furthestAway = superClass;
+	//
+	//	for (CtClass subClass : allClasses) {
+	//		if (subClass.isSubtypeOf(superClass.getReference())
+	//				&& subClass.isSubtypeOf(furthestAway.getReference())) {
+	//			furthestAway = subClass;
+	//		}
+	//	}
+	//
+	//	return furthestAway;
+	//}
 
-		CtClass furthestAway = superClass;
-
-		for (CtClass subClass : allClasses) {
-			if (subClass.isSubtypeOf(superClass.getReference())
-					&& subClass.isSubtypeOf(furthestAway.getReference())) {
-				furthestAway = subClass;
-			}
-		}
-
-		return furthestAway;
-	}
-
-	public List<CtClass> getAllSubClassesIncludingThis(CtClass superClass) {
-		List<CtClass> allClasses = model.getElements(new TypeFilter<>(CtClass.class));
-
-		return allClasses.stream().filter(klass -> klass.isSubtypeOf(superClass.getReference()))
-				.collect(Collectors.toList());
-	}
+	//public List<CtClass> getAllSubClassesIncludingThis(CtClass superClass) {
+	//	List<CtClass> allClasses = model.getElements(new TypeFilter<>(CtClass.class));
+	//
+	//	return allClasses.stream().filter(klass -> klass.isSubtypeOf(superClass.getReference()))
+	//			.collect(Collectors.toList());
+	//}
 
 	public String getAnalysisName() {
 		return analysisName;

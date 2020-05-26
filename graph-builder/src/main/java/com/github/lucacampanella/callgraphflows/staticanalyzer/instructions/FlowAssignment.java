@@ -1,17 +1,18 @@
 package com.github.lucacampanella.callgraphflows.staticanalyzer.instructions;
 
+import java.awt.*;
+
 import com.github.lucacampanella.callgraphflows.graphics.components2.GBaseText;
 import com.github.lucacampanella.callgraphflows.staticanalyzer.AnalyzerWithModel;
 import com.github.lucacampanella.callgraphflows.staticanalyzer.StaticAnalyzerUtils;
 import com.github.lucacampanella.callgraphflows.staticanalyzer.matchers.MatcherHelper;
+import javassist.NotFoundException;
 import net.corda.core.flows.FlowLogic;
 import spoon.reflect.code.CtAssignment;
 import spoon.reflect.code.CtLocalVariable;
 import spoon.reflect.code.CtStatement;
 import spoon.reflect.declaration.CtTypedElement;
 import spoon.support.reflect.code.CtAssignmentImpl;
-
-import java.awt.*;
 
 /**
  * It represents an assignment to a flow variable.
@@ -27,7 +28,7 @@ public class FlowAssignment extends InstructionStatement {
         super(statement);
     }
 
-    public static FlowAssignment fromCtStatement(CtStatement statement, AnalyzerWithModel analyzer) {
+    public static FlowAssignment fromCtStatement(CtStatement statement, AnalyzerWithModel analyzer) throws NotFoundException {
         if(!((CtTypedElement) statement).getType().isSubtypeOf(MatcherHelper.getTypeReference(FlowLogic.class))) {
             return null;
         }

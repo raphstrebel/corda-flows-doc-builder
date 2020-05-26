@@ -1,16 +1,17 @@
 package com.github.lucacampanella.callgraphflows.staticanalyzer.instructions;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import com.github.lucacampanella.callgraphflows.staticanalyzer.AnalyzerWithModel;
 import com.github.lucacampanella.callgraphflows.staticanalyzer.Branch;
 import com.github.lucacampanella.callgraphflows.staticanalyzer.matchers.MatcherHelper;
 import com.github.lucacampanella.callgraphflows.utils.Utils;
+import javassist.NotFoundException;
 import spoon.reflect.code.CtExpression;
 import spoon.reflect.code.CtFor;
 import spoon.reflect.code.CtStatement;
 import spoon.reflect.code.CtStatementList;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 public class For extends LoopBranchingStatement {
     private static final String TO_BE_REPLACED_PATTERN = "1@#45^";
@@ -21,7 +22,7 @@ public class For extends LoopBranchingStatement {
         super();
     }
 
-    public static For fromCtStatement(CtStatement statement, AnalyzerWithModel analyzer) {
+    public static For fromCtStatement(CtStatement statement, AnalyzerWithModel analyzer) throws NotFoundException {
 
         For forInstr = new For();
 
@@ -34,7 +35,15 @@ public class For extends LoopBranchingStatement {
 
         if(!initBlockingStatements.isEmpty()) { //if there are some blocking statements in the init block of the for
             //we just push them before the for
-            init = init.stream().filter(stmt -> MatcherHelper.instantiateStatement(stmt, analyzer) == null)
+            init = init.stream().filter(stmt -> {
+                try {
+                    return MatcherHelper.instantiateStatement(stmt, analyzer) == null;
+                }
+                catch (NotFoundException e) {
+                    e.printStackTrace();
+                }
+                return false;
+            })
                     .collect(Collectors.toList());
             statement = statement.clone();
             forStatement = (CtFor) statement;
@@ -52,7 +61,15 @@ public class For extends LoopBranchingStatement {
 
         if(!updateBlockingStatements.isEmpty()) { //if there are some blocking statements in the update block of the for
             //we just push them at the end of the true block part
-            update = update.stream().filter(stmt -> MatcherHelper.instantiateStatement(stmt, analyzer) == null)
+            update = update.stream().filter(stmt -> {
+                try {
+                    return MatcherHelper.instantiateStatement(stmt, analyzer) == null;
+                }
+                catch (NotFoundException e) {
+                    e.printStackTrace();
+                }
+                return false;
+            })
                     .collect(Collectors.toList());
             statement = statement.clone();
             forStatement = (CtFor) statement;

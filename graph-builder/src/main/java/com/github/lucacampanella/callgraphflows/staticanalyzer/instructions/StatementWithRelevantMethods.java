@@ -2,6 +2,7 @@ package com.github.lucacampanella.callgraphflows.staticanalyzer.instructions;
 
 import com.github.lucacampanella.callgraphflows.staticanalyzer.AnalyzerWithModel;
 import com.github.lucacampanella.callgraphflows.staticanalyzer.StaticAnalyzerUtils;
+import javassist.NotFoundException;
 import spoon.reflect.code.CtStatement;
 
 public class StatementWithRelevantMethods extends InstructionStatement {
@@ -12,7 +13,8 @@ public class StatementWithRelevantMethods extends InstructionStatement {
         super(statement);
     }
 
-    public static StatementWithRelevantMethods fromCtStatement(CtStatement statement, AnalyzerWithModel analyzer) {
+    public static StatementWithRelevantMethods fromCtStatement(CtStatement statement, AnalyzerWithModel analyzer)
+            throws NotFoundException {
         StatementWithRelevantMethods statementWithRelevantMethods = new StatementWithRelevantMethods(statement);
         statementWithRelevantMethods.internalMethodInvocations.add(
                 StaticAnalyzerUtils.getAllRelevantMethodInvocations(statement, analyzer));

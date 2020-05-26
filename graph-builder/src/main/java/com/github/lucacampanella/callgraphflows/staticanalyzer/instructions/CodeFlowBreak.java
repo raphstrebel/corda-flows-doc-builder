@@ -1,10 +1,15 @@
 package com.github.lucacampanella.callgraphflows.staticanalyzer.instructions;
 
+import java.awt.*;
+
 import com.github.lucacampanella.callgraphflows.staticanalyzer.AnalyzerWithModel;
 import com.github.lucacampanella.callgraphflows.staticanalyzer.StaticAnalyzerUtils;
-import spoon.reflect.code.*;
-
-import java.awt.*;
+import javassist.NotFoundException;
+import spoon.reflect.code.CtBreak;
+import spoon.reflect.code.CtContinue;
+import spoon.reflect.code.CtReturn;
+import spoon.reflect.code.CtStatement;
+import spoon.reflect.code.CtThrow;
 
 /**
  * Class that maps CtCFlowBreak, so CtBreak, CtContinue, CtLabelledFlowBreak, CtReturn, CtThrow
@@ -41,7 +46,7 @@ public class CodeFlowBreak extends InstructionStatement {
         super(statement);
     }
 
-    public static CodeFlowBreak fromStatement(CtStatement statement, AnalyzerWithModel analyzer) {
+    public static CodeFlowBreak fromStatement(CtStatement statement, AnalyzerWithModel analyzer) throws NotFoundException {
         CodeFlowBreak flowBreak = new CodeFlowBreak(statement);
         flowBreak.internalMethodInvocations.add(
                 StaticAnalyzerUtils.getAllRelevantMethodInvocations(statement, analyzer));

@@ -1,5 +1,7 @@
 package com.github.lucacampanella.callgraphflows.staticanalyzer.instructions;
 
+import java.util.Optional;
+
 import com.github.lucacampanella.callgraphflows.graphics.components2.GBaseText;
 import com.github.lucacampanella.callgraphflows.graphics.components2.GInstruction;
 import com.github.lucacampanella.callgraphflows.staticanalyzer.AnalyzerWithModel;
@@ -7,10 +9,9 @@ import com.github.lucacampanella.callgraphflows.staticanalyzer.Branch;
 import com.github.lucacampanella.callgraphflows.staticanalyzer.StaticAnalyzerUtils;
 import com.github.lucacampanella.callgraphflows.staticanalyzer.matchers.MatcherHelper;
 import com.github.lucacampanella.callgraphflows.utils.Utils;
+import javassist.NotFoundException;
 import spoon.reflect.code.CtExpression;
 import spoon.reflect.code.CtStatement;
-
-import java.util.Optional;
 
 /**
  * Father class for all statements in which a branching can happen, like {@link For}, {@link ForEach}, {@link IfElse}
@@ -86,7 +87,7 @@ public abstract class BranchingStatement implements StatementWithCompanionInterf
 
     protected void initiateBlockingStatementAndConditionInstruction(CtExpression condition,
                                                                            CtStatement statement,
-                                                                           AnalyzerWithModel analyzer) {
+                                                                           AnalyzerWithModel analyzer) throws NotFoundException {
         this.blockingStatementInCondition = null;
         //automatically initiated to null if the condition doesn't contain a matching blocking statement that
         //communicates with the other flow

@@ -34,6 +34,7 @@ import com.github.lucacampanella.callgraphflows.staticanalyzer.instructions.SubF
 import com.github.lucacampanella.callgraphflows.staticanalyzer.instructions.TransactionBuilder;
 import com.github.lucacampanella.callgraphflows.staticanalyzer.instructions.While;
 import com.github.lucacampanella.callgraphflows.utils.Utils;
+import javassist.NotFoundException;
 import net.corda.core.flows.FlowLogic;
 import net.corda.core.flows.FlowSession;
 import org.slf4j.Logger;
@@ -225,7 +226,7 @@ public final class MatcherHelper {
     }
 
     private static StatementInterface addIfBranchingStatement(CtStatement statement,
-                                                              AnalyzerWithModel analyzer) {
+                                                              AnalyzerWithModel analyzer) throws NotFoundException {
         if(statement instanceof CtIf) {
             return IfElse.fromCtStatement(statement, analyzer);
         }
@@ -247,7 +248,7 @@ public final class MatcherHelper {
     }
 
     private static StatementInterface initiateIfCordaRelevantStatement(CtStatement statement,
-                                                            AnalyzerWithModel analyzer) {
+                                                            AnalyzerWithModel analyzer) throws NotFoundException {
         if (matchesAnyChildren(statement, "transactionBuilderMatcher")) {
             return TransactionBuilder.fromStatement(statement, analyzer);
         } else if (matchesAnyChildren(statement, "initiateFlowMatcher")) {
@@ -270,7 +271,8 @@ public final class MatcherHelper {
     }
 
     private static StatementInterface initiateIfTypedElementContainsFlowSessionOrFlowLogic(CtStatement statement,
-                                                                                           AnalyzerWithModel analyzer) {
+                                                                                           AnalyzerWithModel analyzer)
+            throws NotFoundException {
         CtTypedElement elem = (CtTypedElement) statement;
         if(elem.getType() == null) {
             //LOGGER.warn("Couldn't get type of {}, continuing without trying to figure out " +
@@ -294,7 +296,8 @@ public final class MatcherHelper {
         return null;
     }
 
-    private static StatementInterface initiateIfContainsRelevantMethod(CtStatement statement, AnalyzerWithModel analyzer) {
+    private static StatementInterface initiateIfContainsRelevantMethod(CtStatement statement, AnalyzerWithModel analyzer)
+            throws NotFoundException {
         final List<CtAbstractInvocation> methods = statement.getElements(new TypeFilter<>(CtAbstractInvocation.class));
         if(methods.isEmpty()) {
             return null;
@@ -306,7 +309,8 @@ public final class MatcherHelper {
         return null;
     }
 
-    public static StatementInterface instantiateStatement(CtStatement statement, AnalyzerWithModel analyzer) {
+    public static StatementInterface instantiateStatement(CtStatement statement, AnalyzerWithModel analyzer)
+            throws NotFoundException {
 
         StatementInterface res = addIfBranchingStatement(statement, analyzer);
 
@@ -330,7 +334,7 @@ public final class MatcherHelper {
     }
 
     public static Branch fromCtStatementsToStatements(List<CtStatement> ctStatements,
-                                                      AnalyzerWithModel analyzer) {
+                                                      AnalyzerWithModel analyzer) throws NotFoundException {
         final Branch res = new Branch();
 
         for(CtStatement ctStatement : ctStatements) {
@@ -346,7 +350,8 @@ public final class MatcherHelper {
 
     public static StatementInterface instantiateStatementIfQueryableMatches(CtElement queryable,
                                                                                          CtStatement statement,
-                                                                                         AnalyzerWithModel analyzer) {
+                                                                                         AnalyzerWithModel analyzer)
+            throws NotFoundException {
         if (matchesAnyChildren(queryable, SEND_MATCHER) ||
                 matchesAnyChildren(statement, SEND_WITH_BOOL_MATCHER)) {
             return Send.fromCtStatement(statement, analyzer);

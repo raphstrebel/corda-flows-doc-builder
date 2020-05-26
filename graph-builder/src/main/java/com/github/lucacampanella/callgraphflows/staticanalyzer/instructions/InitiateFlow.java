@@ -7,13 +7,14 @@ import com.github.lucacampanella.callgraphflows.staticanalyzer.ClassDescriptionC
 import com.github.lucacampanella.callgraphflows.staticanalyzer.StaticAnalyzerUtils;
 import com.github.lucacampanella.callgraphflows.staticanalyzer.matchers.MatcherHelper;
 import com.github.lucacampanella.callgraphflows.utils.Utils;
+import javassist.CtClass;
+import javassist.NotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spoon.reflect.code.CtAbstractInvocation;
 import spoon.reflect.code.CtAssignment;
 import spoon.reflect.code.CtLocalVariable;
 import spoon.reflect.code.CtStatement;
-import spoon.reflect.declaration.CtClass;
 import spoon.reflect.visitor.filter.TypeFilter;
 
 public class InitiateFlow extends InstructionStatement {
@@ -30,7 +31,7 @@ public class InitiateFlow extends InstructionStatement {
         super();
     }
 
-    public static InitiateFlow fromCtStatement(CtStatement statement, AnalyzerWithModel analyzer) {
+    public static InitiateFlow fromCtStatement(CtStatement statement, AnalyzerWithModel analyzer) throws NotFoundException {
         InitiateFlow initiateFlow = new InitiateFlow();
         initiateFlow.line = statement.getPosition().getLine();
         initiateFlow.internalMethodInvocations.add(StaticAnalyzerUtils.getAllRelevantMethodInvocations(statement, analyzer));

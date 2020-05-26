@@ -1,21 +1,22 @@
 package com.github.lucacampanella.callgraphflows.staticanalyzer.instructions;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.github.lucacampanella.callgraphflows.staticanalyzer.AnalyzerWithModel;
 import com.github.lucacampanella.callgraphflows.staticanalyzer.Branch;
 import com.github.lucacampanella.callgraphflows.staticanalyzer.CombinationsHolder;
 import com.github.lucacampanella.callgraphflows.staticanalyzer.matchers.MatcherHelper;
+import javassist.NotFoundException;
 import spoon.reflect.code.CtDo;
 import spoon.reflect.code.CtStatement;
 import spoon.reflect.code.CtStatementList;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class DoWhile extends LoopBranchingStatement {
 
     private DoWhile() {super();}
 
-    public static DoWhile fromCtStatement(CtStatement statement, AnalyzerWithModel analyzer) {
+    public static DoWhile fromCtStatement(CtStatement statement, AnalyzerWithModel analyzer) throws NotFoundException {
         DoWhile doWhile = new DoWhile();
         CtDo whileStatement = (CtDo) statement;
 

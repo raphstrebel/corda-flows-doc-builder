@@ -375,7 +375,8 @@ public class StaticAnalyzerUtils {
         return Optional.empty();
     }
 
-    public static Branch getAllRelevantMethodInvocations(CtElement statement, AnalyzerWithModel analyzer) {
+    public static Branch getAllRelevantMethodInvocations(CtElement statement, AnalyzerWithModel analyzer)
+            throws NotFoundException {
         Branch res = new Branch();
 
         if(statement instanceof CtAbstractInvocation) { //it's a method call

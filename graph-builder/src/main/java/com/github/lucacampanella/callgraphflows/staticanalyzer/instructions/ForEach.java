@@ -3,6 +3,7 @@ package com.github.lucacampanella.callgraphflows.staticanalyzer.instructions;
 import com.github.lucacampanella.callgraphflows.staticanalyzer.AnalyzerWithModel;
 import com.github.lucacampanella.callgraphflows.staticanalyzer.matchers.MatcherHelper;
 import com.github.lucacampanella.callgraphflows.utils.Utils;
+import javassist.NotFoundException;
 import spoon.reflect.code.CtExpression;
 import spoon.reflect.code.CtForEach;
 import spoon.reflect.code.CtStatement;
@@ -16,7 +17,7 @@ public class ForEach extends LoopBranchingStatement {
         super();
     }
 
-    public static ForEach fromCtStatement(CtStatement statement, AnalyzerWithModel analyzer) {
+    public static ForEach fromCtStatement(CtStatement statement, AnalyzerWithModel analyzer) throws NotFoundException {
 
         ForEach forInstr = new ForEach();
 

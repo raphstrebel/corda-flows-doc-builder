@@ -1,15 +1,16 @@
 package com.github.lucacampanella.callgraphflows.staticanalyzer.instructions;
 
+import java.util.Optional;
+
 import com.github.lucacampanella.callgraphflows.graphics.components2.GBaseSimpleComponent;
-import com.github.lucacampanella.callgraphflows.utils.Utils;
 import com.github.lucacampanella.callgraphflows.staticanalyzer.AnalyzerWithModel;
 import com.github.lucacampanella.callgraphflows.staticanalyzer.StaticAnalyzerUtils;
 import com.github.lucacampanella.callgraphflows.staticanalyzer.matchers.MatcherHelper;
+import com.github.lucacampanella.callgraphflows.utils.Utils;
+import javassist.NotFoundException;
 import spoon.reflect.code.CtInvocation;
 import spoon.reflect.code.CtStatement;
 import spoon.reflect.declaration.CtTypedElement;
-
-import java.util.Optional;
 
 public class Send extends InstructionStatement implements StatementWithCompanionInterface {
     private static final String SYMBOL = "";//"==>";
@@ -25,7 +26,7 @@ public class Send extends InstructionStatement implements StatementWithCompanion
         super();
     }
 
-    public static Send fromCtStatement(CtStatement statement, AnalyzerWithModel analyzer) {
+    public static Send fromCtStatement(CtStatement statement, AnalyzerWithModel analyzer) throws NotFoundException {
         Send send = new Send();
         send.line = statement.getPosition().getLine();
         send.internalMethodInvocations.add(StaticAnalyzerUtils.getAllRelevantMethodInvocations(statement, analyzer));

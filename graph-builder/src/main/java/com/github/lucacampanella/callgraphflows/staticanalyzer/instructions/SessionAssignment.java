@@ -1,9 +1,13 @@
 package com.github.lucacampanella.callgraphflows.staticanalyzer.instructions;
 
+import java.awt.*;
+import java.util.Optional;
+
 import com.github.lucacampanella.callgraphflows.graphics.components2.GBaseText;
 import com.github.lucacampanella.callgraphflows.staticanalyzer.AnalyzerWithModel;
 import com.github.lucacampanella.callgraphflows.staticanalyzer.StaticAnalyzerUtils;
 import com.github.lucacampanella.callgraphflows.staticanalyzer.matchers.MatcherHelper;
+import javassist.NotFoundException;
 import net.corda.core.flows.FlowSession;
 import spoon.reflect.code.CtAssignment;
 import spoon.reflect.code.CtExpression;
@@ -11,9 +15,6 @@ import spoon.reflect.code.CtLocalVariable;
 import spoon.reflect.code.CtStatement;
 import spoon.reflect.declaration.CtTypedElement;
 import spoon.support.reflect.code.CtAssignmentImpl;
-
-import java.awt.*;
-import java.util.Optional;
 
 public class SessionAssignment extends InstructionStatement {
 
@@ -23,7 +24,7 @@ public class SessionAssignment extends InstructionStatement {
         super(statement);
     }
 
-    public static SessionAssignment fromCtStatement(CtStatement statement, AnalyzerWithModel analyzer) {
+    public static SessionAssignment fromCtStatement(CtStatement statement, AnalyzerWithModel analyzer) throws NotFoundException {
         if(!((CtTypedElement) statement).getType().isSubtypeOf(MatcherHelper.getTypeReference(FlowSession.class))) {
             return null;
         }

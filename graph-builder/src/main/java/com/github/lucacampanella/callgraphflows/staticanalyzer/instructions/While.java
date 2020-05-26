@@ -2,6 +2,7 @@ package com.github.lucacampanella.callgraphflows.staticanalyzer.instructions;
 
 import com.github.lucacampanella.callgraphflows.staticanalyzer.AnalyzerWithModel;
 import com.github.lucacampanella.callgraphflows.staticanalyzer.matchers.MatcherHelper;
+import javassist.NotFoundException;
 import spoon.reflect.code.CtStatement;
 import spoon.reflect.code.CtStatementList;
 import spoon.reflect.code.CtWhile;
@@ -10,7 +11,7 @@ public class While extends LoopBranchingStatement {
     private While() {
     }
 
-    public static While fromStatement(CtStatement statement, AnalyzerWithModel analyzer) {
+    public static While fromStatement(CtStatement statement, AnalyzerWithModel analyzer) throws NotFoundException {
         While whileInstr = new While();
 
         CtWhile whileStatement = (CtWhile) statement;

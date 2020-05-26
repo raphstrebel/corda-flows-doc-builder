@@ -11,6 +11,9 @@ import com.github.lucacampanella.callgraphflows.staticanalyzer.AnalyzerWithModel
 import com.github.lucacampanella.callgraphflows.staticanalyzer.Branch;
 import com.github.lucacampanella.callgraphflows.staticanalyzer.StaticAnalyzerUtils;
 import com.github.lucacampanella.callgraphflows.staticanalyzer.matchers.MatcherHelper;
+import javassist.CtClass;
+import javassist.CtMethod;
+import javassist.NotFoundException;
 import net.corda.confidential.IdentitySyncFlow;
 import net.corda.confidential.SwapIdentitiesFlow;
 import net.corda.core.flows.CollectSignatureFlow;
@@ -31,8 +34,6 @@ import spoon.reflect.code.CtInvocation;
 import spoon.reflect.code.CtLocalVariable;
 import spoon.reflect.code.CtStatement;
 import spoon.reflect.code.CtVariableRead;
-import spoon.reflect.declaration.CtClass;
-import spoon.reflect.declaration.CtMethod;
 import spoon.reflect.reference.CtTypeReference;
 import spoon.support.reflect.code.CtAssignmentImpl;
 
@@ -111,7 +112,7 @@ public class SubFlowBuilder {
                 MatcherHelper.getTypeReference(IdentitySyncFlow.Receive.class));
     }
 
-    public static SubFlowBase fromCtStatement(CtStatement statement, AnalyzerWithModel analyzer) {
+    public static SubFlowBase fromCtStatement(CtStatement statement, AnalyzerWithModel analyzer) throws NotFoundException {
 
         SubFlowInfo subFlowInfo = new SubFlowInfo();
 
@@ -158,11 +159,12 @@ public class SubFlowBuilder {
                 final CtMethod callMethod = StaticAnalyzerUtils.findCallMethod(
                         (CtClass) subFlowInfo.subFlowType.getTypeDeclaration());
                 if (callMethod != null) {
-                    final CtTypeReference returnTypeRef = StaticAnalyzerUtils.nullifyIfVoidType(callMethod.getType());
+                    //final CtTypeReference returnTypeRef = StaticAnalyzerUtils.nullifyIfVoidType(callMethod.getType());
+                    final String returnTypeRef = callMethod.getReturnType().toString();
                     if(returnTypeRef == null){
                         subFlowInfo.returnType = Optional.empty();
                     } else {
-                        subFlowInfo.returnType = Optional.ofNullable(returnTypeRef.toString());
+                        subFlowInfo.returnType = Optional.of(returnTypeRef);
                     }
                 }
             }

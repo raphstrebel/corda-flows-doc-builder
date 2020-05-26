@@ -15,6 +15,8 @@ import com.github.lucacampanella.callgraphflows.staticanalyzer.CombinationsHolde
 import com.github.lucacampanella.callgraphflows.staticanalyzer.StaticAnalyzerUtils;
 import com.github.lucacampanella.callgraphflows.staticanalyzer.matchers.MatcherHelper;
 import com.github.lucacampanella.callgraphflows.utils.Utils;
+import javassist.CtClass;
+import javassist.NotFoundException;
 import net.corda.core.flows.FlowLogic;
 import net.corda.core.flows.FlowSession;
 import org.slf4j.Logger;
@@ -25,9 +27,7 @@ import spoon.reflect.code.CtInvocation;
 import spoon.reflect.code.CtStatement;
 import spoon.reflect.code.CtVariableRead;
 import spoon.reflect.cu.position.NoSourcePosition;
-import spoon.reflect.declaration.CtClass;
 import spoon.reflect.declaration.CtExecutable;
-import spoon.reflect.declaration.CtMethod;
 import spoon.reflect.declaration.CtParameter;
 import spoon.support.reflect.code.CtSuperAccessImpl;
 
@@ -46,7 +46,7 @@ public class MethodInvocation extends InstructionStatement {
                 Utils.fromStatementToString(statement));
     }
 
-    public static MethodInvocation fromCtStatement(CtStatement statement, AnalyzerWithModel analyzer) {
+    public static MethodInvocation fromCtStatement(CtStatement statement, AnalyzerWithModel analyzer) throws NotFoundException {
 
         MethodInvocation methodInvocation = new MethodInvocation(statement);
 
@@ -86,16 +86,16 @@ public class MethodInvocation extends InstructionStatement {
 
             //this and the preceding if should mean the same, but they don't in case of a call to "this(...)"
             //which is still represented as a CtInvocation even if it's a constructor call
-            if(declaration instanceof CtMethod) {
-                dynamicallyDispatchedExecutable =
-                        analyzer.getCurrClassCallStackHolder().
-                                fromCtAbstractInvocationToDynamicExecutableRef((CtInvocation) statement);
-            }
-            else { //a constructor call
-                //could use getExecutableDeclaration instaead of getDeclaration, but this would also mean
-                //analyzing the body of corda methods, for now this is ok
+            //if(declaration instanceof CtMethod) {
+            //    dynamicallyDispatchedExecutable =
+            //            analyzer.getCurrClassCallStackHolder().
+            //                    fromCtAbstractInvocationToDynamicExecutableRef((CtInvocation) statement);
+            //}
+            //else { //a constructor call
+            //    //could use getExecutableDeclaration instaead of getDeclaration, but this would also mean
+            //    //analyzing the body of corda methods, for now this is ok
                 dynamicallyDispatchedExecutable = declaration;
-            }
+            //}
 
             try {
                 methodInvocation.returnType = StaticAnalyzerUtils

@@ -1,13 +1,14 @@
 package com.github.lucacampanella.callgraphflows;
 
+import java.io.IOException;
+import java.util.concurrent.Callable;
+
 import com.github.lucacampanella.callgraphflows.staticanalyzer.DecompilerEnum;
 import com.github.lucacampanella.callgraphflows.staticanalyzer.SourceAndJarAnalyzer;
+import javassist.NotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
-
-import java.io.IOException;
-import java.util.concurrent.Callable;
 
 
 public class Main implements Callable<Void> {
@@ -52,14 +53,14 @@ public class Main implements Callable<Void> {
                     " statement itself, placed after all the relevant methods.")
     boolean drawStatementsWithRelevantMethods = false;
 
-    public static void main(String []args) throws IOException {
+    public static void main(String []args) throws IOException, NotFoundException {
 
         final Main app = CommandLine.populateCommand(new Main(), args);
         app.call();
     }
 
     @Override
-    public Void call() throws IOException {
+    public Void call() throws IOException, NotFoundException {
         final String loggerLevel = System.getProperty("org.slf4j.simpleLogger.defaultLogLevel");
         if(loggerLevel == null) {
             System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", "error");
@@ -75,6 +76,7 @@ public class Main implements Callable<Void> {
         DrawerUtil.setDrawLineNumbers(drawLineNumbers);
         DrawerUtil.setDrawBoxAroundSubFlows(!noDrawBoxAroundSubflow);
         DrawerUtil.setDrawArrows(!noArrows);
+        DrawerUtil.setPathToSrc(filesPaths);
         DrawerUtil.setDrawReturn(drawReturn);
         DrawerUtil.setDrawThrow(!noDrawThrow);
         DrawerUtil.setDrawBreakContinue(!noBreakContinue);

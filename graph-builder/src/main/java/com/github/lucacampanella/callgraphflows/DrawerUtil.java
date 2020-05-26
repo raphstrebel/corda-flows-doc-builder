@@ -15,9 +15,10 @@ import com.github.lucacampanella.callgraphflows.staticanalyzer.AnalyzerWithModel
 import com.github.lucacampanella.callgraphflows.staticanalyzer.ClassDescriptionContainer;
 import com.github.lucacampanella.callgraphflows.staticanalyzer.instructions.CodeFlowBreak;
 import com.github.lucacampanella.callgraphflows.staticanalyzer.instructions.StatementWithRelevantMethods;
+import javassist.CtClass;
+import javassist.NotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import spoon.reflect.declaration.CtClass;
 
 public final class DrawerUtil {
 
@@ -31,7 +32,8 @@ public final class DrawerUtil {
 
     private static final String IMAGES_FOLDER_NAME = "images";
 
-    public static void drawAllStartableClasses(AnalyzerWithModel analyzerWithModel, String outPath) throws IOException {
+    public static void drawAllStartableClasses(AnalyzerWithModel analyzerWithModel, String outPath)
+            throws IOException, NotFoundException {
         if(outPath == null) {
             outPath = DEFAULT_OUT_DIR;
         }
@@ -47,12 +49,12 @@ public final class DrawerUtil {
         for (CtClass klass : startableByRPCClasses) {
             //LOGGER.info("**** Analyzing class {} ", klass.getQualifiedName());
             drawFromClass(analyzerWithModel, klass, outPath);
-            asciiDocIndexBuilder.addFile(klass.getQualifiedName() + ".adoc");
+            asciiDocIndexBuilder.addFile(klass.getName() + ".adoc");
         }
         asciiDocIndexBuilder.writeToFile(Paths.get(outPath, "index.adoc").toString());
     }
 
-    public static void drawAllStartableClasses(AnalyzerWithModel analyzerWithModel) throws IOException {
+    public static void drawAllStartableClasses(AnalyzerWithModel analyzerWithModel) throws IOException, NotFoundException {
         drawAllStartableClasses(analyzerWithModel, DEFAULT_OUT_DIR);
     }
 
@@ -60,8 +62,8 @@ public final class DrawerUtil {
         final AnalysisResult analysisResult;
         try {
             analysisResult = analyzerWithModel.analyzeFlowLogicClass(klass);
-        } catch (AnalysisErrorException e) {
-            LOGGER.error("Couldn't analyze class {}, skipping this class", klass.getQualifiedName(), e);
+        } catch (AnalysisErrorException | NotFoundException e) {
+            LOGGER.error("Couldn't analyze class {}, skipping this class", klass.getName(), e);
             return;
         }
 
@@ -89,6 +91,10 @@ public final class DrawerUtil {
 
     public static void setDrawArrows(boolean drawArrows) {
         AnalyzerWithModel.setDrawArrows(drawArrows);
+    }
+
+    public static void setPathToSrc(String[] pathToSrc) {
+        AnalyzerWithModel.setPathToSrc(pathToSrc);
     }
 
     public static void setDrawReturn(boolean drawReturn) {
