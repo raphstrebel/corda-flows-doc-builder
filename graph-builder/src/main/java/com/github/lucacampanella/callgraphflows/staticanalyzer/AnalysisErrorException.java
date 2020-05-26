@@ -1,6 +1,8 @@
 package com.github.lucacampanella.callgraphflows.staticanalyzer;
 
-import spoon.reflect.declaration.CtClass;
+//import spoon.reflect.declaration.CtClass;
+
+import javassist.CtClass;
 
 public class AnalysisErrorException extends Exception {
     private final CtClass analyzedClass;
@@ -14,6 +16,6 @@ public class AnalysisErrorException extends Exception {
     //Message can be retrieved using this accessor method
     @Override
     public String getMessage() {
-        return "[In analysis of class: " + analyzedClass.getQualifiedName() + "] " + message;
+        return "[In analysis of class: " + analyzedClass.getName() + "] " + message;
     }
 }

@@ -7,11 +7,13 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javassist.CtClass;
+import javassist.NotFoundException;
 import net.corda.core.flows.InitiatingFlow;
 import net.corda.core.flows.StartableByRPC;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import spoon.reflect.declaration.CtClass;
+//import spoon.reflect.declaration.CtClass;
 
 public class ClassDescriptionContainer {
     private String simpleName;
@@ -36,7 +38,7 @@ public class ClassDescriptionContainer {
         this.annotations = annotations;
     }
 
-    public static ClassDescriptionContainer fromClass(CtClass klass) {
+    public static ClassDescriptionContainer fromClass(CtClass klass) throws NotFoundException {
         String simpleName;
         String containingClassName;
         String packageName;
@@ -50,11 +52,19 @@ public class ClassDescriptionContainer {
         }
 
         simpleName = klass.getSimpleName();
-        containingClassName = klass.getTopLevelType().getSimpleName() == simpleName ?
-                null : klass.getTopLevelType().getSimpleName();
-        packageName = klass.getPackage().getQualifiedName();
-        fullyQualifiedName = klass.getQualifiedName();
-        comments = klass.getDocComment();
+        //containingClassName = klass.getTopLevelType().getSimpleName() == simpleName ?
+        //        null : klass.getTopLevelType().getSimpleName();
+        //packageName = klass.getPackage().getQualifiedName();
+        //fullyQualifiedName = klass.getQualifiedName();
+        //comments = klass.getDocComment();
+        CtClass topLevelClass = klass;
+        while (topLevelClass.getSuperclass() != null) {
+            topLevelClass = topLevelClass.getSuperclass();
+        }
+        containingClassName = topLevelClass.getSimpleName() == simpleName ? null : topLevelClass.getSimpleName();
+        packageName = klass.getPackageName();
+        fullyQualifiedName = klass.getName();
+        comments = ""; // TODO : no idea how to get comments in javaassist ctclass
 
         final Set<String> presentAnnotations = importantAnnotations.stream().filter(annotClass ->
                 klass.hasAnnotation(annotClass)).map(annotClass -> annotClass.getSimpleName())

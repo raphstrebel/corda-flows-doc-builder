@@ -7,6 +7,9 @@ import java.util.stream.Collectors;
 
 import com.github.lucacampanella.callgraphflows.staticanalyzer.instructions.MethodInvocation;
 import com.github.lucacampanella.callgraphflows.staticanalyzer.matchers.MatcherHelper;
+import javassist.CtClass;
+import javassist.CtMethod;
+import javassist.NotFoundException;
 import kotlin.Unit;
 import net.corda.core.flows.FlowSession;
 import org.slf4j.Logger;
@@ -15,12 +18,13 @@ import spoon.reflect.code.CtAbstractInvocation;
 import spoon.reflect.code.CtLiteral;
 import spoon.reflect.code.CtStatement;
 import spoon.reflect.code.CtVariableRead;
-import spoon.reflect.declaration.CtClass;
 import spoon.reflect.declaration.CtElement;
-import spoon.reflect.declaration.CtMethod;
 import spoon.reflect.reference.CtTypeReference;
-import spoon.reflect.visitor.filter.NamedElementFilter;
 import spoon.reflect.visitor.filter.TypeFilter;
+
+//import spoon.reflect.declaration.CtMethod;
+
+//import spoon.reflect.declaration.CtClass;
 
 public class StaticAnalyzerUtils {
 
@@ -37,18 +41,19 @@ public class StaticAnalyzerUtils {
         return getLowerContainingClass(elem.getParent());
     }
 
-    public static CtMethod findCallMethod(CtClass klass) {
-        List<CtMethod> call;
+    public static CtMethod findCallMethod(CtClass klass) throws NotFoundException {
+        CtMethod call;
           //we look in the class and if it's not there in the superclasses
         CtClass currClass = klass;
         while(true) {
-            call = currClass.getElements(new NamedElementFilter(CtMethod.class,
-                    "call"));
+            call = currClass.getDeclaredMethod("call");
+            //call = currClass.getElements(new NamedElementFilter(CtMethod.class, "call"));
             if(!call.isEmpty()) {
-                return call.get(0);
+                return call;
             }
             try {
-                currClass = (CtClass) currClass.getSuperclass().getTypeDeclaration();
+                //currClass = (CtClass) currClass.getSuperclass().getTypeDeclaration();
+                currClass = currClass.getSuperclass();
                 if(currClass == null) {
                     return null;
                 }
@@ -64,7 +69,8 @@ public class StaticAnalyzerUtils {
 
         for(CtClass subClass : initiatingClasses) {
             for(CtClass superClass : initiatingClasses) {
-                if (subClass != superClass && subClass.isSubtypeOf(superClass.getReference())) {
+                //if (subClass != superClass && subClass.isSubtypeOf(superClass.getReference())) {
+                if (subClass != superClass && subClass.subclassOf(superClass)) {
                     wronglyDoubleAnnotated.add(subClass);
                     break;
                 }
