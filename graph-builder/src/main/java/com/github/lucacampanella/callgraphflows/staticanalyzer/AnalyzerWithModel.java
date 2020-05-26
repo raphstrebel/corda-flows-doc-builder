@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.github.lucacampanella.callgraphflows.staticanalyzer.matchers.MatcherHelper;
 import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.CtMethod;
@@ -60,7 +61,8 @@ public class AnalyzerWithModel {
 		return null;
 	}
 
-	public AnalysisResult analyzeFlowLogicClass(Class klass) throws AnalysisErrorException, NotFoundException {
+	public AnalysisResult analyzeFlowLogicClass(Class klass)
+			throws AnalysisErrorException, NotFoundException, IOException, ClassNotFoundException {
 		final CtClass ctClass = getClass(klass);
 		if (ctClass == null) {
 			throw new IllegalArgumentException("The class is not in the model");
@@ -68,7 +70,8 @@ public class AnalyzerWithModel {
 		return analyzeFlowLogicClass(ctClass);
 	}
 
-	public AnalysisResult analyzeFlowLogicClass(CtClass klass) throws AnalysisErrorException, NotFoundException {
+	public AnalysisResult analyzeFlowLogicClass(CtClass klass)
+			throws AnalysisErrorException, NotFoundException, IOException, ClassNotFoundException {
 
 		if (classToAnalysisResultMap.containsKey(klass)) {
 			//LOGGER.info("*** class {} already analyzed, using cached result", klass.getQualifiedName());
@@ -80,41 +83,7 @@ public class AnalyzerWithModel {
 
 			//if(!klass.isSubtypeOf(MatcherHelper.getTypeReference(FlowLogic.class))) {
 			if (!klass.subtypeOf(flowLogicCtClass)) {
-				LOGGER.info(
-						"----------------------------------------------------------------------------------------------------------------------");
-
-				//LOGGER.info("analyzing class : {}",klass.getName()
-				//JavassistClassDeclaration classDeclaration = new JavassistClassDeclaration(klass, null);
-
-				//LOGGER.info("spoon model packages : {}", model.getAllPackages());
-
-				//LOGGER.info("class name : {}", klass.getSimpleName());
-				//LOGGER.info("super class name : {}", klass.getSuperclass().getSimpleName());
-				//LOGGER.info("super class children : {}", klass.getSuperclass().getDirectChildren());
-				//LOGGER.info("super class class : {}", klass.getSuperclass().getClass());
-				//LOGGER.info("super class parent : {}", klass.getSuperclass().getParent());
-				//LOGGER.info("super class short repr : {}", klass.getSuperclass().getShortRepresentation());
-				//LOGGER.info("super class ref types : {}", klass.getSuperclass().getReferencedTypes());
-				//LOGGER.info("super class type erasure : {}", klass.getSuperclass().getTypeErasure());
-				//LOGGER.info("super class qualif name : {}", klass.getSuperclass().getQualifiedName());
-
-				//LOGGER.info("super class type declaration : {}", klass.getSuperclass().getTypeDeclaration()); // null
-				//LOGGER.info("super class declaration : {}", klass.getSuperclass().getDeclaration()); // null
-				//LOGGER.info("super class unbox : {}", klass.getSuperclass().unbox()); // same as getSuperclass()
-				//LOGGER.info("super class modifiers : {}", klass.getSuperclass().getModifiers()); // []
-				//LOGGER.info("super class type param declaration : {}", klass.getSuperclass().getTypeParameterDeclaration());//
-                // null
-				//LOGGER.info("super class declaring type : {}", klass.getSuperclass().getDeclaringType()); // null
-				//LOGGER.info("super class all fields : {}", klass.getSuperclass().getAllFields()); // []
-				//LOGGER.info("super class actual type args : {}", klass.getSuperclass().getActualTypeArguments()); // not
-                // important
-				//LOGGER.info("super class original src fragment : {}", klass.getSuperclass().getOriginalSourceFragment()); //
-                // error
-				//LOGGER.info("super class declared fields : {}", klass.getSuperclass().getDeclaredFields()); // []
-
-				LOGGER.info(
-						"----------------------------------------------------------------------------------------------------------------------");
-				//throw new IllegalArgumentException("Class " +klass.getQualifiedName() +" doesn't extend FlowLogic");
+				throw new IllegalArgumentException("Class " + klass.getName() +" doesn't extend FlowLogic");
 			}
 			//LOGGER.info("*** analyzing class {}", klass.getQualifiedName());
 
@@ -143,32 +112,32 @@ public class AnalyzerWithModel {
 			//LOGGER.info("call method body statements : {}", callMethod.getBody().getStatements());
 
 
-			//final Branch interestingStatements = MatcherHelper.fromCtStatementsToStatements(
-			//		callMethod.getBody().getStatements(), this);
-			//res.setStatements(interestingStatements);
+			// TODO : Maybe here we need spoon's CtClass ? (just do spoon.CtClass as parameter type)
+			final Branch interestingStatements = MatcherHelper.fromCtStatementsToStatements(callMethod.getBody().getStatements(), this);
+			res.setStatements(interestingStatements);
 
 			//is it only a "container" flow with no initiating call or also calls initiateFlow(...)?
-			final boolean isInitiatingFlow = false;
-			//final boolean isInitiatingFlow = interestingStatements.getInitiateFlowStatementAtThisLevel().isPresent();
+			//final boolean isInitiatingFlow = false;
+			final boolean isInitiatingFlow = interestingStatements.getInitiateFlowStatementAtThisLevel().isPresent();
 
 			LOGGER.debug("Contains initiate call? {}", isInitiatingFlow);
 			if (isInitiatingFlow) {
-				//CtClass initiatedFlowClass = getDeeperClassInitiatedBy(klass);
-                //
-				//if (initiatedFlowClass != null) {
-				//	res.setCounterpartyClassResult(analyzeFlowLogicClass(initiatedFlowClass));
-				//}
-				//else {
-				//	LOGGER.error("Class {} contains initiateFlow call, but can't find corresponding class", klass.getName());
-				//}
-				//if (drawArrows) {
-				//	final boolean validProtocol =
-				//			res.checkIfContainsValidProtocolAndSetupLinks();//check the protocol and draws possible links
-				//	//LOGGER.info("Class {} contains valid protocol? {}", klass.getQualifiedName(), validProtocol);
-				//}
-				//else {
-				//	//LOGGER.info("Set on not drawing arrows, the protocol is not figured out");
-				//}
+				CtClass initiatedFlowClass = getDeeperClassInitiatedBy(klass);
+
+				if (initiatedFlowClass != null) {
+					res.setCounterpartyClassResult(analyzeFlowLogicClass(initiatedFlowClass));
+				}
+				else {
+					LOGGER.error("Class {} contains initiateFlow call, but can't find corresponding class", klass.getName());
+				}
+				if (drawArrows) {
+					final boolean validProtocol =
+							res.checkIfContainsValidProtocolAndSetupLinks();//check the protocol and draws possible links
+					//LOGGER.info("Class {} contains valid protocol? {}", klass.getQualifiedName(), validProtocol);
+				}
+				else {
+					//LOGGER.info("Set on not drawing arrows, the protocol is not figured out");
+				}
 			}
 
 			classToAnalysisResultMap.put(klass, res);
@@ -188,39 +157,15 @@ public class AnalyzerWithModel {
 
 		List<CtElement> elements = model.getElements(new AnnotationFilter<>(annotationClass));
 
-		LOGGER.info("------------------------ GET CLASSES BY ANNOTATION ------------------------");
-		//for (CtElement element : elements) {
-		//	CtClassImpl e = (CtClassImpl) element;
-		//
-		//	//if(e.getSimpleName().equals("BulkIssueEventInitiator")) {
-		//	//    LOGGER.info(" element name : {}", e.getSimpleName());
-		//	//    LOGGER.info(" element class : {}", e.getClass());
-		//	//    LOGGER.info(" element superclass : {}", e.getSuperclass());
-		//	//    LOGGER.info(" element superclass class : {}", e.getSuperclass().getClass());
-		//	//    LOGGER.info(" element superclass getTypeDeclaration : {}", e.getSuperclass().getTypeDeclaration());
-		//	//}
-		//
-		//	//CtRef... to CtClassImpl ? -> check google?..
-		//}
-
-		//((CtClassImpl) elements.get(0)).getActualClass()
-
 		ClassPool pool = new ClassPool(ClassPool.getDefault());
 
-		// should be /home/raphael/Desktop/cardossier/core/cardossier-core-flows/build/libs/cardossier-core-flows.jar
-
+		// should be .../cardossier/core/cardossier-core-flows/build/libs/cardossier-core-flows.jar
 		LOGGER.info("-------------------------------------------------------------");
 		LOGGER.info("The path to JAR :{}", pathToSrc[0]);
-		//pool.getCtClass();
 
 		pool.appendClassPath(pathToSrc[0]);
-		//CtClass ctClass = pool.get("org.slf4j.Logger");
-
-		//ClassPool pool = ClassPool.getDefault();
-		//CtClass ctClass = pool.makeClass(new FileInputStream(((CtClassImpl) elements.get(0)).getQualifiedName()));
 
 		List<CtClass> allClasses = new ArrayList<>();
-
 		for(CtElement e: elements) {
 			allClasses.add(pool.getCtClass(((CtClassImpl) e).getQualifiedName()));
 		}

@@ -62,7 +62,7 @@ public final class DrawerUtil {
         final AnalysisResult analysisResult;
         try {
             analysisResult = analyzerWithModel.analyzeFlowLogicClass(klass);
-        } catch (AnalysisErrorException | NotFoundException e) {
+        } catch (AnalysisErrorException | NotFoundException | ClassNotFoundException e) {
             LOGGER.error("Couldn't analyze class {}, skipping this class", klass.getName(), e);
             return;
         }
