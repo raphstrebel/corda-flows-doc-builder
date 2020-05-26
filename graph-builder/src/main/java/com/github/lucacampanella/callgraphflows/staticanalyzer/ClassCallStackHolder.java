@@ -5,11 +5,11 @@ import java.util.List;
 import java.util.Set;
 
 import com.github.lucacampanella.callgraphflows.staticanalyzer.matchers.MatcherHelper;
+import javassist.CtClass;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spoon.reflect.code.CtInvocation;
 import spoon.reflect.code.CtThisAccess;
-import spoon.reflect.declaration.CtClass;
 import spoon.reflect.declaration.CtMethod;
 import spoon.reflect.reference.CtTypeParameterReference;
 import spoon.reflect.reference.CtTypeReference;
@@ -23,7 +23,8 @@ public class ClassCallStackHolder {
     public static ClassCallStackHolder fromCtClass(CtClass klass) {
         ClassCallStackHolder classCallStackHolder = new ClassCallStackHolder();
 
-        classCallStackHolder.classStack.add(klass.getReference());
+        //classCallStackHolder.classStack.add(klass.getReference());
+        //classCallStackHolder.classStack.add(klass.getPackageName());
 
         CtTypeReference<?> superclassRef = klass.getSuperclass();
         while(superclassRef != null && !superclassRef.getQualifiedName().startsWith("net.corda")) {
@@ -49,7 +50,7 @@ public class ClassCallStackHolder {
         CtClass callerClass = StaticAnalyzerUtils.getLowerContainingClass(inv);
 
         for(CtTypeReference<?> currRef : classStack) {
-            final CtClass<?> curr = (CtClass<?>) currRef.getTypeDeclaration();
+            final spoon.reflect.declaration.CtClass<?> curr = (spoon.reflect.declaration.CtClass<?>) currRef.getTypeDeclaration();
             if (curr == callerClass)
             //we arrived at the class calling the method without finding an implementation lower in the class stack
             //this means the method is implemented here for the first time

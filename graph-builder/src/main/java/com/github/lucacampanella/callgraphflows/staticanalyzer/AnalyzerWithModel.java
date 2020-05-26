@@ -144,35 +144,35 @@ public class AnalyzerWithModel {
 			//res.getClassDescription().setReturnType(StaticAnalyzerUtils.nullifyIfVoidTypeAndGetString(callMethod.getType()));
 			res.getClassDescription().setReturnType(callMethod.getReturnType().getName());
 
-			LOGGER.info("call method body statements : {}", callMethod.getBody().getStatements());
+			//LOGGER.info("call method body statements : {}", callMethod.getBody().getStatements());
 
 
-			final Branch interestingStatements = MatcherHelper.fromCtStatementsToStatements(
-					callMethod.getBody().getStatements(), this);
-			res.setStatements(interestingStatements);
+			//final Branch interestingStatements = MatcherHelper.fromCtStatementsToStatements(
+			//		callMethod.getBody().getStatements(), this);
+			//res.setStatements(interestingStatements);
 
 			//is it only a "container" flow with no initiating call or also calls initiateFlow(...)?
-			final boolean isInitiatingFlow =
-					interestingStatements.getInitiateFlowStatementAtThisLevel().isPresent();
+			final boolean isInitiatingFlow = false;
+			//final boolean isInitiatingFlow = interestingStatements.getInitiateFlowStatementAtThisLevel().isPresent();
 
 			LOGGER.debug("Contains initiate call? {}", isInitiatingFlow);
 			if (isInitiatingFlow) {
-				CtClass initiatedFlowClass = getDeeperClassInitiatedBy(klass);
-
-				if (initiatedFlowClass != null) {
-					res.setCounterpartyClassResult(analyzeFlowLogicClass(initiatedFlowClass));
-				}
-				else {
-					LOGGER.error("Class {} contains initiateFlow call, but can't find corresponding class", klass.getName());
-				}
-				if (drawArrows) {
-					final boolean validProtocol =
-							res.checkIfContainsValidProtocolAndSetupLinks();//check the protocol and draws possible links
-					//LOGGER.info("Class {} contains valid protocol? {}", klass.getQualifiedName(), validProtocol);
-				}
-				else {
-					//LOGGER.info("Set on not drawing arrows, the protocol is not figured out");
-				}
+				//CtClass initiatedFlowClass = getDeeperClassInitiatedBy(klass);
+                //
+				//if (initiatedFlowClass != null) {
+				//	res.setCounterpartyClassResult(analyzeFlowLogicClass(initiatedFlowClass));
+				//}
+				//else {
+				//	LOGGER.error("Class {} contains initiateFlow call, but can't find corresponding class", klass.getName());
+				//}
+				//if (drawArrows) {
+				//	final boolean validProtocol =
+				//			res.checkIfContainsValidProtocolAndSetupLinks();//check the protocol and draws possible links
+				//	//LOGGER.info("Class {} contains valid protocol? {}", klass.getQualifiedName(), validProtocol);
+				//}
+				//else {
+				//	//LOGGER.info("Set on not drawing arrows, the protocol is not figured out");
+				//}
 			}
 
 			classToAnalysisResultMap.put(klass, res);
