@@ -1,15 +1,15 @@
 package com.github.lucacampanella.callgraphflows.staticanalyzer.instructions;
 
+import java.util.Optional;
+
 import com.github.lucacampanella.callgraphflows.graphics.components2.GBaseSimpleComponent;
-import com.github.lucacampanella.callgraphflows.utils.Utils;
 import com.github.lucacampanella.callgraphflows.staticanalyzer.AnalyzerWithModel;
 import com.github.lucacampanella.callgraphflows.staticanalyzer.StaticAnalyzerUtils;
 import com.github.lucacampanella.callgraphflows.staticanalyzer.matchers.MatcherHelper;
+import com.github.lucacampanella.callgraphflows.utils.Utils;
 import spoon.reflect.code.CtInvocation;
 import spoon.reflect.code.CtStatement;
 import spoon.reflect.declaration.CtTypedElement;
-
-import java.util.Optional;
 
 public class Send extends InstructionStatement implements StatementWithCompanionInterface {
     private static final String SYMBOL = "";//"==>";
@@ -36,9 +36,15 @@ public class Send extends InstructionStatement implements StatementWithCompanion
             invocation = (CtInvocation) MatcherHelper.getFirstMatchedExpression(statement,
                     "sendWithBoolMatcher");
         }
-        send.sentType = analyzer.getCurrClassCallStackHolder().resolveEventualGenerics(
-                ((CtTypedElement) invocation.getArguments().get(0)).getType())
-                .box().toString();
+
+        try {
+            send.sentType = analyzer.getCurrClassCallStackHolder().resolveEventualGenerics(
+                    ((CtTypedElement) invocation.getArguments().get(0)).getType())
+                    .box().toString();
+        } catch(NullPointerException e) {
+            send.sentType = "";
+        }
+
 
         send.targetSessionName = Optional.ofNullable(invocation.getTarget().toString());
 

@@ -1,7 +1,11 @@
 package com.github.lucacampanella.callgraphflows.staticanalyzer.instructions;
 
-import com.github.lucacampanella.callgraphflows.staticanalyzer.AnalysisErrorException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+
 import com.github.lucacampanella.callgraphflows.graphics.components2.GInstruction;
+import com.github.lucacampanella.callgraphflows.staticanalyzer.AnalysisErrorException;
 import com.github.lucacampanella.callgraphflows.staticanalyzer.AnalysisResult;
 import com.github.lucacampanella.callgraphflows.staticanalyzer.AnalyzerWithModel;
 import com.github.lucacampanella.callgraphflows.staticanalyzer.Branch;
@@ -9,18 +13,28 @@ import com.github.lucacampanella.callgraphflows.staticanalyzer.StaticAnalyzerUti
 import com.github.lucacampanella.callgraphflows.staticanalyzer.matchers.MatcherHelper;
 import net.corda.confidential.IdentitySyncFlow;
 import net.corda.confidential.SwapIdentitiesFlow;
-import net.corda.core.flows.*;
+import net.corda.core.flows.CollectSignatureFlow;
+import net.corda.core.flows.CollectSignaturesFlow;
+import net.corda.core.flows.FinalityFlow;
+import net.corda.core.flows.FlowLogic;
+import net.corda.core.flows.ReceiveFinalityFlow;
+import net.corda.core.flows.ReceiveStateAndRefFlow;
+import net.corda.core.flows.ReceiveTransactionFlow;
+import net.corda.core.flows.SendStateAndRefFlow;
+import net.corda.core.flows.SendTransactionFlow;
+import net.corda.core.flows.SignTransactionFlow;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import spoon.reflect.code.*;
+import spoon.reflect.code.CtAbstractInvocation;
+import spoon.reflect.code.CtAssignment;
+import spoon.reflect.code.CtInvocation;
+import spoon.reflect.code.CtLocalVariable;
+import spoon.reflect.code.CtStatement;
+import spoon.reflect.code.CtVariableRead;
 import spoon.reflect.declaration.CtClass;
 import spoon.reflect.declaration.CtMethod;
 import spoon.reflect.reference.CtTypeReference;
 import spoon.support.reflect.code.CtAssignmentImpl;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
 
 public class SubFlowBuilder {
 
@@ -180,7 +194,7 @@ public class SubFlowBuilder {
                 }
                 ((SubFlowBaseWithAnalysis) result).resultOfClassAnalysis = resultOfClassAnalysis;
 
-            } catch (AnalysisErrorException e) {
+            } catch (AnalysisErrorException | NullPointerException e) {
                 LOGGER.warn("Could not get contents of subflow {}, inserting empty flow instead" +
                         "\nThis could result in a problem in the produced graph",
                         subFlowInfo.subFlowType.toString(), e);

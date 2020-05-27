@@ -1,13 +1,13 @@
 package com.github.lucacampanella.callgraphflows.graphics.components2;
 
+import java.awt.*;
+
 import com.github.lucacampanella.callgraphflows.graphics.utils.GUtils;
 import com.github.lucacampanella.callgraphflows.staticanalyzer.AnalysisResult;
 import com.github.lucacampanella.callgraphflows.staticanalyzer.ClassDescriptionContainer;
 import com.github.lucacampanella.callgraphflows.staticanalyzer.instructions.InitiateFlow;
 import com.github.lucacampanella.callgraphflows.utils.Utils;
 import org.jfree.graphics2d.svg.SVGGraphics2D;
-
-import java.awt.*;
 
 public class GTwoSidedContainer extends GBaseComponent {
 
@@ -206,6 +206,10 @@ public class GTwoSidedContainer extends GBaseComponent {
 
     public static GTwoSidedContainer fromAnalysisResult(AnalysisResult analysisResult) {
         GTwoSidedContainer twoSidedContainer = new GTwoSidedContainer();
+
+        if(analysisResult == null) {
+            return twoSidedContainer;
+        }
 
         final ClassDescriptionContainer classDescription = analysisResult.getClassDescription();
 

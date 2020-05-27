@@ -1,5 +1,9 @@
 package com.github.lucacampanella.callgraphflows.staticanalyzer;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
 import com.github.lucacampanella.callgraphflows.staticanalyzer.matchers.MatcherHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,8 +13,6 @@ import spoon.reflect.declaration.CtClass;
 import spoon.reflect.declaration.CtMethod;
 import spoon.reflect.reference.CtTypeParameterReference;
 import spoon.reflect.reference.CtTypeReference;
-
-import java.util.*;
 
 public class ClassCallStackHolder {
 
@@ -70,6 +72,11 @@ public class ClassCallStackHolder {
     }
 
     public CtTypeReference resolveEventualGenerics(CtTypeReference elem) {
+
+        if(elem == null) {
+            return null;
+        }
+
         if(elem instanceof CtTypeParameterReference) { //is a generics
             CtTypeParameterReference typeParameterRef = (CtTypeParameterReference) elem;
             //klass.getSuperclass().getActualTypeArguments().get(0).getTypeParameterDeclaration()
@@ -86,8 +93,7 @@ public class ClassCallStackHolder {
                     }
                 }
             }
-        }
-        else if(elem.isSubtypeOf(MatcherHelper.getTypeReference(Class.class))) {
+        } else if(elem.isSubtypeOf(MatcherHelper.getTypeReference(Class.class))) {
             final List<CtTypeReference<?>> typeArgs = elem.getActualTypeArguments();
             if(typeArgs != null && !typeArgs.isEmpty()) {
                 return resolveEventualGenerics(typeArgs.get(0));

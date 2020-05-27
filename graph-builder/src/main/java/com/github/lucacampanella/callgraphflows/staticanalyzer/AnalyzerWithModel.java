@@ -1,5 +1,12 @@
 package com.github.lucacampanella.callgraphflows.staticanalyzer;
 
+import java.lang.annotation.Annotation;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 import com.github.lucacampanella.callgraphflows.staticanalyzer.matchers.MatcherHelper;
 import net.corda.core.flows.FlowLogic;
 import net.corda.core.flows.InitiatedBy;
@@ -16,10 +23,6 @@ import spoon.reflect.visitor.filter.AnnotationFilter;
 import spoon.reflect.visitor.filter.NamedElementFilter;
 import spoon.reflect.visitor.filter.TypeFilter;
 import spoon.support.reflect.code.CtFieldReadImpl;
-
-import java.lang.annotation.Annotation;
-import java.util.*;
-import java.util.stream.Collectors;
 
 public class AnalyzerWithModel {
 
@@ -60,6 +63,11 @@ public class AnalyzerWithModel {
     }
 
     public AnalysisResult analyzeFlowLogicClass(CtClass klass) throws AnalysisErrorException {
+
+        if(klass == null) {
+            return null;
+        }
+
         if(classToAnalysisResultMap.containsKey(klass)) {
             LOGGER.info("*** class {} already analyzed, using cached result", klass.getQualifiedName());
             return classToAnalysisResultMap.get(klass);

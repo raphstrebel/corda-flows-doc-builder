@@ -1,12 +1,12 @@
 package com.github.lucacampanella.callgraphflows.staticanalyzer.instructions;
 
+import java.util.Optional;
+
 import com.github.lucacampanella.callgraphflows.graphics.components2.GInstruction;
 import com.github.lucacampanella.callgraphflows.staticanalyzer.Branch;
 import com.github.lucacampanella.callgraphflows.utils.Utils;
 import net.corda.core.flows.FlowLogic;
 import spoon.reflect.reference.CtTypeReference;
-
-import java.util.Optional;
 
 public abstract class SubFlowBase implements StatementInterface {
 
@@ -25,7 +25,7 @@ public abstract class SubFlowBase implements StatementInterface {
 
     protected Optional<String> targetSessionName = Optional.empty();
 
-    Boolean isInitiatingFlow = null;
+    Boolean isInitiatingFlow = false;
 
     GInstruction initiatingInstruction; //this is the call to subFlow
 

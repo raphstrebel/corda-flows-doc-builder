@@ -1,15 +1,15 @@
 package com.github.lucacampanella.callgraphflows.utils;
 
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import com.github.lucacampanella.callgraphflows.staticanalyzer.matchers.MatcherHelper;
 import spoon.reflect.code.CtExpression;
 import spoon.reflect.code.CtInvocation;
 import spoon.reflect.code.CtStatement;
 import spoon.reflect.visitor.chain.CtQueryable;
 import spoon.template.TemplateMatcher;
-
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public final class Utils {
 
@@ -21,6 +21,11 @@ public final class Utils {
     }
 
     public static String removePackageDescription(String code) {
+
+        if(code == null) {
+            return "";
+        }
+
         Pattern pattern = Pattern.compile("([a-z0-9]|\\.)+\\.([A-Z])");
         Matcher matcher = pattern.matcher(code);
         StringBuilder sb = new StringBuilder(code);

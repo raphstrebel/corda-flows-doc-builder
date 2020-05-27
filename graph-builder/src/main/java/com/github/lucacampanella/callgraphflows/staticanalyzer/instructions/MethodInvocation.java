@@ -1,27 +1,35 @@
 package com.github.lucacampanella.callgraphflows.staticanalyzer.instructions;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
 import com.github.lucacampanella.callgraphflows.graphics.components2.GBaseComponent;
 import com.github.lucacampanella.callgraphflows.graphics.components2.GBaseText;
 import com.github.lucacampanella.callgraphflows.graphics.components2.GConditionalBranchIndented;
-import com.github.lucacampanella.callgraphflows.staticanalyzer.*;
+import com.github.lucacampanella.callgraphflows.staticanalyzer.AnalyzerWithModel;
+import com.github.lucacampanella.callgraphflows.staticanalyzer.Branch;
+import com.github.lucacampanella.callgraphflows.staticanalyzer.ClassDescriptionContainer;
+import com.github.lucacampanella.callgraphflows.staticanalyzer.CombinationsHolder;
+import com.github.lucacampanella.callgraphflows.staticanalyzer.StaticAnalyzerUtils;
 import com.github.lucacampanella.callgraphflows.staticanalyzer.matchers.MatcherHelper;
 import com.github.lucacampanella.callgraphflows.utils.Utils;
 import net.corda.core.flows.FlowLogic;
 import net.corda.core.flows.FlowSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import spoon.reflect.code.*;
+import spoon.reflect.code.CtAbstractInvocation;
+import spoon.reflect.code.CtExpression;
+import spoon.reflect.code.CtInvocation;
+import spoon.reflect.code.CtStatement;
+import spoon.reflect.code.CtVariableRead;
 import spoon.reflect.cu.position.NoSourcePosition;
 import spoon.reflect.declaration.CtClass;
 import spoon.reflect.declaration.CtExecutable;
 import spoon.reflect.declaration.CtMethod;
 import spoon.reflect.declaration.CtParameter;
 import spoon.support.reflect.code.CtSuperAccessImpl;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 
 public class MethodInvocation extends InstructionStatement {
 
@@ -103,12 +111,29 @@ public class MethodInvocation extends InstructionStatement {
                 CtExpression expr = arguments.get(i);
                 if(expr instanceof CtVariableRead && expr.getType() != null) {
                     CtVariableRead varRead = (CtVariableRead) expr;
-                    if(analyzer.getCurrClassCallStackHolder().resolveEventualGenerics(varRead.getType())
-                            .isSubtypeOf(MatcherHelper.getTypeReference(FlowSession.class))) {
+
+                    boolean isFlowSession = false;
+
+                    try {
+                        isFlowSession = analyzer.getCurrClassCallStackHolder().resolveEventualGenerics(varRead.getType())
+                                .isSubtypeOf(MatcherHelper.getTypeReference(FlowSession.class));
+                    } catch(NullPointerException e) {
+                        isFlowSession = false;
+                    }
+
+                    boolean isFlowLogic = false;
+
+                    try {
+                        isFlowLogic = analyzer.getCurrClassCallStackHolder().resolveEventualGenerics(varRead.getType())
+                                .isSubtypeOf(MatcherHelper.getTypeReference(FlowLogic.class));
+                    } catch(NullPointerException e) {
+                        isFlowLogic = false;
+                    }
+
+                    if(isFlowSession) {
                         addToMapIfNoException(methodInvocation.callerSessionNameToCalleeSessionName, inv, i);
                     }
-                    else if(analyzer.getCurrClassCallStackHolder().resolveEventualGenerics(varRead.getType())
-                            .isSubtypeOf(MatcherHelper.getTypeReference(FlowLogic.class))) {
+                    else if(isFlowLogic) {
                         addToMapIfNoException(methodInvocation.callerFlowNameToCalleeFlowName, inv, i);
                     }
                 }
@@ -148,7 +173,7 @@ public class MethodInvocation extends InstructionStatement {
             map.put(inv.getArguments().get(i).toString(),
                     ((CtParameter) inv.getExecutable().getDeclaration().getParameters().get(i))
                             .getSimpleName());
-        }catch (NullPointerException e) {
+        }catch (NullPointerException | IndexOutOfBoundsException e) {
             LOGGER.warn("Error while retrieving parameter name for method: {}", inv);
         }
     }
